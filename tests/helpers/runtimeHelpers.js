@@ -41,7 +41,7 @@ export const API_BASE =
 export function writeRuntime(file, obj) {
   fs.mkdirSync(RUNTIME_DIR, { recursive: true });
   fs.writeFileSync(file, JSON.stringify({ ...obj, _writtenAt: new Date().toISOString() }, null, 2));
-  console.log(`  📝 runtime: ${path.relative(process.cwd(), file)} likh diya`);
+  console.log(`  📝 runtime: ${path.relative(process.cwd(), file)} Written`);
 }
 
 export function readRuntime(file) {
