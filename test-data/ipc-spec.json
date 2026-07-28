@@ -1,0 +1,65 @@
+{
+  "environment": "production",
+  "navigation": {
+    "chdpdProject": "CHD/PD/707A/QA_BINDER-OS/47"
+  },
+  "formData": {
+    "_comment": "5 alag products, har ek ke 2 component (TOP/BOTTOM placement). Realistic home-tex range.",
+    "defaults": {
+      "buyerSku": "SKU-{{random}}",
+      "setOf": "2",
+      "poQty": "1000",
+      "overage": "5",
+      "deliveryDate": "{{futureDate}}"
+    },
+    "skus": [
+      {
+        "_product": "RUG",
+        "product": "RUG",
+        "poQty": "1200",
+        "components": [
+          { "name": "Pile Yarn",    "placement": "TOP PLACEMENT" },
+          { "name": "Backing Cloth", "placement": "BOTTOM PLACEMENT" }
+        ]
+      },
+      {
+        "_product": "CUSHION",
+        "product": "CUSHION",
+        "poQty": "800",
+        "components": [
+          { "name": "Front Panel", "placement": "TOP PLACEMENT" },
+          { "name": "Back Panel",  "placement": "BOTTOM PLACEMENT" }
+        ]
+      },
+      {
+        "_product": "TOWEL",
+        "product": "TOWEL",
+        "poQty": "2000",
+        "components": [
+          { "name": "Terry Ground", "placement": "TOP PLACEMENT" },
+          { "name": "Dobby Border", "placement": "BOTTOM PLACEMENT" }
+        ]
+      },
+      {
+        "_product": "CURTAIN",
+        "product": "CURTAIN",
+        "poQty": "600",
+        "components": [
+          { "name": "Face Fabric", "placement": "TOP PLACEMENT" },
+          { "name": "Lining",      "placement": "BOTTOM PLACEMENT" }
+        ]
+      },
+      {
+        "_product": "BLANKETS",
+        "product": "BLANKETS",
+        "poQty": "900",
+        "components": [
+          { "name": "Woven Body",  "placement": "TOP PLACEMENT" },
+          { "name": "Satin Binding","placement": "BOTTOM PLACEMENT" }
+        ]
+      }
+    ]
+  },
+  "timeout": { "page": 15000, "element": 8000, "dropdown": 5000, "test": 900000 },
+  "options": { "cleanup": true, "screenshot": true, "removeSubproducts": true }
+}

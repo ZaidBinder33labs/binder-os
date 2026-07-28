@@ -1,0 +1,259 @@
+{
+  "timeout": {
+    "page": 15000,
+    "element": 8000,
+    "test": 900000
+  },
+  "navigation": {
+    "chdpdProject": "CHD/PD/707A/QA_BINDER-OS/47"
+  },
+  "_note": "Sizes = product ke realistic dimensions. Finishing process/types finishingData.js se EXACT (har component alag process).",
+  "ipcs": [
+    {
+      "ipcIndex": 0,
+      "cutting": [
+        {
+          "component": "Pile Yarn",
+          "L": 152,
+          "W": 91,
+          "unit": "Yardage (CM)"
+        },
+        {
+          "component": "Backing Cloth",
+          "L": 154,
+          "W": 93,
+          "unit": "Yardage (CM)"
+        }
+      ],
+      "sewing": [
+        {
+          "component": "Pile Yarn",
+          "L": 150,
+          "W": 90,
+          "unit": "Yardage (CM)"
+        },
+        {
+          "component": "Backing Cloth",
+          "L": 150,
+          "W": 90,
+          "unit": "Yardage (CM)"
+        }
+      ],
+      "finishing": [
+        {
+          "component": "Pile Yarn",
+          "process": "Shearing",
+          "types": [
+            "Full Surface",
+            "High-Low"
+          ],
+          "remarks": "even pile height"
+        },
+        {
+          "component": "Backing Cloth",
+          "process": "Fringe Knotting",
+          "types": [
+            "Double"
+          ],
+          "remarks": "tasseled ends"
+        }
+      ]
+    },
+    {
+      "ipcIndex": 1,
+      "cutting": [
+        {
+          "component": "Front Panel",
+          "L": 45,
+          "W": 45,
+          "unit": "Yardage (CM)"
+        },
+        {
+          "component": "Back Panel",
+          "L": 45,
+          "W": 45,
+          "unit": "Yardage (CM)"
+        }
+      ],
+      "sewing": [
+        {
+          "component": "Front Panel",
+          "L": 43,
+          "W": 43,
+          "unit": "Yardage (CM)"
+        },
+        {
+          "component": "Back Panel",
+          "L": 43,
+          "W": 43,
+          "unit": "Yardage (CM)"
+        }
+      ],
+      "finishing": [
+        {
+          "component": "Front Panel",
+          "process": "Pressing",
+          "types": [
+            "Steam"
+          ],
+          "remarks": "crease-free face"
+        },
+        {
+          "component": "Back Panel",
+          "process": "Thread Trimming",
+          "types": [
+            "Precision"
+          ],
+          "remarks": "zipper seam clean"
+        }
+      ]
+    },
+    {
+      "ipcIndex": 2,
+      "cutting": [
+        {
+          "component": "Terry Ground",
+          "L": 140,
+          "W": 70,
+          "unit": "Yardage (CM)"
+        },
+        {
+          "component": "Dobby Border",
+          "L": 70,
+          "W": 8,
+          "unit": "Yardage (CM)"
+        }
+      ],
+      "sewing": [
+        {
+          "component": "Terry Ground",
+          "L": 138,
+          "W": 68,
+          "unit": "Yardage (CM)"
+        },
+        {
+          "component": "Dobby Border",
+          "L": 68,
+          "W": 7,
+          "unit": "Yardage (CM)"
+        }
+      ],
+      "finishing": [
+        {
+          "component": "Terry Ground",
+          "process": "Brushing",
+          "types": [
+            "Soft"
+          ],
+          "remarks": "softener finish"
+        },
+        {
+          "component": "Dobby Border",
+          "process": "Folding",
+          "types": [
+            "Retail"
+          ],
+          "remarks": "band-folded"
+        }
+      ]
+    },
+    {
+      "ipcIndex": 3,
+      "cutting": [
+        {
+          "component": "Face Fabric",
+          "L": 250,
+          "W": 140,
+          "unit": "Yardage (CM)"
+        },
+        {
+          "component": "Lining",
+          "L": 248,
+          "W": 138,
+          "unit": "Yardage (CM)"
+        }
+      ],
+      "sewing": [
+        {
+          "component": "Face Fabric",
+          "L": 245,
+          "W": 137,
+          "unit": "Yardage (CM)"
+        },
+        {
+          "component": "Lining",
+          "L": 245,
+          "W": 137,
+          "unit": "Yardage (CM)"
+        }
+      ],
+      "finishing": [
+        {
+          "component": "Face Fabric",
+          "process": "Pressing",
+          "types": [
+            "Roller"
+          ],
+          "remarks": "pleat set"
+        },
+        {
+          "component": "Lining",
+          "process": "Measurement Check",
+          "types": [
+            "100%"
+          ],
+          "remarks": "drop length QC"
+        }
+      ]
+    },
+    {
+      "ipcIndex": 4,
+      "cutting": [
+        {
+          "component": "Woven Body",
+          "L": 220,
+          "W": 240,
+          "unit": "Yardage (CM)"
+        },
+        {
+          "component": "Satin Binding",
+          "L": 920,
+          "W": 5,
+          "unit": "Yardage (CM)"
+        }
+      ],
+      "sewing": [
+        {
+          "component": "Woven Body",
+          "L": 218,
+          "W": 238,
+          "unit": "Yardage (CM)"
+        },
+        {
+          "component": "Satin Binding",
+          "L": 915,
+          "W": 4,
+          "unit": "Yardage (CM)"
+        }
+      ],
+      "finishing": [
+        {
+          "component": "Woven Body",
+          "process": "Shearing",
+          "types": [
+            "Full Surface"
+          ],
+          "remarks": "nap evened"
+        },
+        {
+          "component": "Satin Binding",
+          "process": "Shape Correction",
+          "types": [
+            "Steam Blocking"
+          ],
+          "remarks": "mitred corners"
+        }
+      ]
+    }
+  ]
+}

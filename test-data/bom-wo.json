@@ -1,0 +1,519 @@
+{
+  "navigation": {
+    "chdpdProject": "CHD/PD/707A/QA_BINDER-OS/47"
+  },
+  "_valid_fiberTypes": [
+    "Cotton",
+    "Polyster",
+    "Linen",
+    "Silk",
+    "Wool",
+    "Cotton Blends",
+    "Viscose/Rayon",
+    "Nylon"
+  ],
+  "_valid_approval": [
+    "Self",
+    "QA Approval",
+    "Buyer Approval",
+    "Initial Sample",
+    "PP Sample",
+    "White Seal Sample"
+  ],
+  "_valid_testing": [
+    "Tensile Strength",
+    "Color Fastness",
+    "Shrinkage",
+    "Pilling",
+    "GSM Check",
+    "Dimensional Stability"
+  ],
+  "_note": "Har component ka fiber\u2192fabricName source map (textileFabricData.js) se EXACT. Composition auto/manual dono handle.",
+  "ipcs": [
+    {
+      "ipcIndex": 0,
+      "components": [
+        {
+          "component": "Pile Yarn",
+          "materialType": "Fabric",
+          "netCns": "320",
+          "unit": "KGS",
+          "qualityInspected": "Yes",
+          "fabric": {
+            "fiberType": "Wool",
+            "fabricName": "Wool Suiting",
+            "composition": "100% Wool",
+            "gsm": "1800",
+            "testingRequirements": [
+              "Tensile Strength",
+              "Pilling"
+            ],
+            "approval": "Buyer Approval",
+            "remarks": "hand-tufted pile",
+            "fiberCategory": "Natural - Protein",
+            "constructionType": "woven - twill weave",
+            "weaveKnitType": "2x2 Twill",
+            "origin": "Animal (Sheep)",
+            "certificationRequirement": "Woolmark"
+          },
+          "workOrders": [
+            {
+              "type": "QUILTING",
+              "fields": {
+                "QUILTING TYPE": "MULTI NEEDLE",
+                "DESIGN REF": "__UPLOAD__",
+                "STITCH LENGTH (MM)": "12",
+                "PATTERN REPEAT": "As Design",
+                "WASTAGE %": "4",
+                "APPROVAL": "Self",
+                "REMARKS": "auto"
+              }
+            },
+            {
+              "type": "CUTTING",
+              "fields": {
+                "REMARKS": "cut in cut&sew"
+              }
+            },
+            {
+              "type": "SEWING",
+              "fields": {
+                "REMARKS": "sew in cut&sew"
+              }
+            },
+            {
+              "type": "FINISHING",
+              "fields": {
+                "Is this required?": "Yes"
+              }
+            }
+          ]
+        },
+        {
+          "component": "Backing Cloth",
+          "materialType": "Yarn",
+          "netCns": "180",
+          "unit": "KGS",
+          "qualityInspected": "No",
+          "workOrders": [
+            {
+              "type": "CUTTING",
+              "fields": {
+                "REMARKS": "cut in cut&sew"
+              }
+            },
+            {
+              "type": "SEWING",
+              "fields": {
+                "REMARKS": "sew in cut&sew"
+              }
+            },
+            {
+              "type": "FINISHING",
+              "fields": {
+                "Is this required?": "Yes"
+              }
+            }
+          ],
+          "yarn": {
+            "fiberType": "Cotton",
+            "yarnType": "Cotton Combed",
+            "composition": "100% Cotton",
+            "countRange": "20-120",
+            "spinningType": "Combed/Ring Spun",
+            "doublingOptions": "Single",
+            "plyOptions": "2",
+            "windingOptions": "Cone",
+            "fiberCategory": "Natural - Cellulosic",
+            "origin": "Plant (Seed)",
+            "colour": "Natural (Greige)",
+            "certificationRequirement": "OEKO-TEX",
+            "testingRequirements": [
+              "Tensile Strength",
+              "Colour Fastness"
+            ],
+            "approval": "QA Approval",
+            "remarks": "combed cotton yarn for backing"
+          }
+        }
+      ]
+    },
+    {
+      "ipcIndex": 1,
+      "components": [
+        {
+          "component": "Front Panel",
+          "materialType": "Fabric",
+          "netCns": "140",
+          "unit": "CM",
+          "qualityInspected": "Yes",
+          "fabric": {
+            "fiberType": "Cotton Blends",
+            "fabricName": "CVC Jersey",
+            "composition": "60% Cotton 40% Polyester",
+            "gsm": "200",
+            "testingRequirements": [
+              "Color Fastness",
+              "Pilling"
+            ],
+            "approval": "QA Approval",
+            "remarks": "printed face",
+            "fiberCategory": "Blended",
+            "constructionType": "knitted - weft knit",
+            "weaveKnitType": "Single jersey",
+            "origin": "Mixed",
+            "certificationRequirement": "OEKO-TEX"
+          },
+          "workOrders": [
+            {
+              "type": "CUTTING",
+              "fields": {
+                "REMARKS": "cut in cut&sew"
+              }
+            },
+            {
+              "type": "SEWING",
+              "fields": {
+                "REMARKS": "sew in cut&sew"
+              }
+            },
+            {
+              "type": "FINISHING",
+              "fields": {
+                "Is this required?": "Yes"
+              }
+            }
+          ]
+        },
+        {
+          "component": "Back Panel",
+          "materialType": "Fabric",
+          "netCns": "120",
+          "unit": "CM",
+          "qualityInspected": "No",
+          "fabric": {
+            "fiberType": "Polyster",
+            "fabricName": "polyster oxford",
+            "composition": "100% Polyester",
+            "gsm": "180",
+            "testingRequirements": [
+              "Tensile Strength",
+              "Color Fastness"
+            ],
+            "approval": "Self",
+            "remarks": "solid dyed",
+            "fiberCategory": "Synthetic",
+            "constructionType": "woven - plain weave",
+            "weaveKnitType": "2*2 basket",
+            "origin": "Petroleum",
+            "certificationRequirement": "OEKO-TEX"
+          },
+          "workOrders": [
+            {
+              "type": "CUTTING",
+              "fields": {
+                "REMARKS": "cut in cut&sew"
+              }
+            },
+            {
+              "type": "SEWING",
+              "fields": {
+                "REMARKS": "sew in cut&sew"
+              }
+            },
+            {
+              "type": "FINISHING",
+              "fields": {
+                "Is this required?": "Yes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ipcIndex": 2,
+      "components": [
+        {
+          "component": "Terry Ground",
+          "materialType": "Fabric",
+          "netCns": "450",
+          "unit": "KGS",
+          "qualityInspected": "Yes",
+          "fabric": {
+            "fiberType": "Cotton",
+            "fabricName": "percale",
+            "composition": "100% Cotton",
+            "gsm": "500",
+            "testingRequirements": [
+              "GSM Check",
+              "Shrinkage",
+              "Color Fastness"
+            ],
+            "approval": "Buyer Approval",
+            "remarks": "550 gsm terry",
+            "fiberCategory": "Natural - Cellulosic",
+            "constructionType": "woven - plain weave",
+            "weaveKnitType": "1x1 Plain",
+            "origin": "Plant (Seed)",
+            "certificationRequirement": "GOTS"
+          },
+          "workOrders": [
+            {
+              "type": "CUTTING",
+              "fields": {
+                "REMARKS": "cut in cut&sew"
+              }
+            },
+            {
+              "type": "SEWING",
+              "fields": {
+                "REMARKS": "sew in cut&sew"
+              }
+            },
+            {
+              "type": "FINISHING",
+              "fields": {
+                "Is this required?": "Yes"
+              }
+            }
+          ]
+        },
+        {
+          "component": "Dobby Border",
+          "materialType": "Fabric",
+          "netCns": "60",
+          "unit": "KGS",
+          "qualityInspected": "No",
+          "fabric": {
+            "fiberType": "Cotton",
+            "fabricName": "poplin",
+            "composition": "100% Cotton",
+            "gsm": "160",
+            "testingRequirements": [
+              "Color Fastness"
+            ],
+            "approval": "Self",
+            "remarks": "woven dobby stripe",
+            "fiberCategory": "Natural - Cellulosic",
+            "constructionType": "woven - plain weave",
+            "weaveKnitType": "1x1 Plain (fine rub)",
+            "origin": "Plant (Seed)",
+            "certificationRequirement": "OEKO-TEX"
+          },
+          "workOrders": [
+            {
+              "type": "CUTTING",
+              "fields": {
+                "REMARKS": "cut in cut&sew"
+              }
+            },
+            {
+              "type": "SEWING",
+              "fields": {
+                "REMARKS": "sew in cut&sew"
+              }
+            },
+            {
+              "type": "FINISHING",
+              "fields": {
+                "Is this required?": "Yes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ipcIndex": 3,
+      "components": [
+        {
+          "component": "Face Fabric",
+          "materialType": "Fabric",
+          "netCns": "210",
+          "unit": "CM",
+          "qualityInspected": "Yes",
+          "fabric": {
+            "fiberType": "Linen",
+            "fabricName": "Linen Plain Weave",
+            "composition": "100% Linen",
+            "gsm": "240",
+            "testingRequirements": [
+              "Tensile Strength",
+              "Shrinkage",
+              "Color Fastness"
+            ],
+            "approval": "PP Sample",
+            "remarks": "slub texture",
+            "fiberCategory": "Natural - Bast",
+            "constructionType": "woven - plain weave",
+            "weaveKnitType": "1x1 Plain",
+            "origin": "Plant (Flax)",
+            "certificationRequirement": "European Flax"
+          },
+          "workOrders": [
+            {
+              "type": "CUTTING",
+              "fields": {
+                "REMARKS": "cut in cut&sew"
+              }
+            },
+            {
+              "type": "SEWING",
+              "fields": {
+                "REMARKS": "sew in cut&sew"
+              }
+            },
+            {
+              "type": "FINISHING",
+              "fields": {
+                "Is this required?": "Yes"
+              }
+            }
+          ]
+        },
+        {
+          "component": "Lining",
+          "materialType": "Fabric",
+          "netCns": "110",
+          "unit": "CM",
+          "qualityInspected": "No",
+          "fabric": {
+            "fiberType": "Polyster",
+            "fabricName": "taffeta",
+            "composition": "100% Polyester",
+            "gsm": "90",
+            "testingRequirements": [
+              "Color Fastness"
+            ],
+            "approval": "Self",
+            "remarks": "dim-out lining",
+            "fiberCategory": "Synthetic",
+            "constructionType": "woven - plain weave",
+            "weaveKnitType": "1x1 Plain (crisp)",
+            "origin": "Petroleum",
+            "certificationRequirement": "OEKO-TEX"
+          },
+          "workOrders": [
+            {
+              "type": "CUTTING",
+              "fields": {
+                "REMARKS": "cut in cut&sew"
+              }
+            },
+            {
+              "type": "SEWING",
+              "fields": {
+                "REMARKS": "sew in cut&sew"
+              }
+            },
+            {
+              "type": "FINISHING",
+              "fields": {
+                "Is this required?": "Yes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ipcIndex": 4,
+      "components": [
+        {
+          "component": "Woven Body",
+          "materialType": "Fabric",
+          "netCns": "380",
+          "unit": "KGS",
+          "qualityInspected": "Yes",
+          "fabric": {
+            "fiberType": "Cotton Blends",
+            "fabricName": "Cotton-Modal Jersey",
+            "composition": "50% Cotton 50% Modal",
+            "gsm": "320",
+            "testingRequirements": [
+              "Pilling",
+              "Shrinkage",
+              "GSM Check"
+            ],
+            "approval": "QA Approval",
+            "remarks": "brushed both sides",
+            "fiberCategory": "Blended",
+            "constructionType": "knitted - weft knit",
+            "weaveKnitType": "Single jersey",
+            "origin": "Mixed",
+            "certificationRequirement": "OEKO-TEX"
+          },
+          "workOrders": [
+            {
+              "type": "CUTTING",
+              "fields": {
+                "REMARKS": "cut in cut&sew"
+              }
+            },
+            {
+              "type": "SEWING",
+              "fields": {
+                "REMARKS": "sew in cut&sew"
+              }
+            },
+            {
+              "type": "FINISHING",
+              "fields": {
+                "Is this required?": "Yes"
+              }
+            }
+          ]
+        },
+        {
+          "component": "Satin Binding",
+          "materialType": "Fabric",
+          "netCns": "40",
+          "unit": "CM",
+          "qualityInspected": "No",
+          "fabric": {
+            "fiberType": "Silk",
+            "fabricName": "Silk Charmeuse",
+            "composition": "100% Silk",
+            "gsm": "80",
+            "testingRequirements": [
+              "Color Fastness"
+            ],
+            "approval": "Buyer Approval",
+            "remarks": "satin edge binding",
+            "fiberCategory": "Natural - Protein",
+            "constructionType": "woven - satin weave",
+            "weaveKnitType": "4/1 Satin (lustrous face)",
+            "origin": "Insect (Silkworm)",
+            "certificationRequirement": "OEKO-TEX"
+          },
+          "workOrders": [
+            {
+              "type": "CUTTING",
+              "fields": {
+                "REMARKS": "cut in cut&sew"
+              }
+            },
+            {
+              "type": "SEWING",
+              "fields": {
+                "REMARKS": "sew in cut&sew"
+              }
+            },
+            {
+              "type": "FINISHING",
+              "fields": {
+                "Is this required?": "Yes"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "timeout": {
+    "page": 15000,
+    "element": 8000,
+    "test": 900000
+  }
+}

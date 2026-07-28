@@ -1,0 +1,15 @@
+# Secrets — 
+.env
+.auth/
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+.runtime/
+
+# Test artifacts
+test-files/
+.reorg-backup-*/

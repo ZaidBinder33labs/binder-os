@@ -1,0 +1,14 @@
+{
+  "_comment": "STEP B — IPO Code. orderType dynamic: Production | Sampling | Company",
+  "_branch_help": {
+    "Production": "buyer code lagta hai (01-buyer se aata hai)",
+    "Sampling": "buyer code lagta hai (01-buyer se aata hai)",
+    "Company": "buyer code NAHI; companyType (STOCK|SAM) lagta hai"
+  },
+  "ipo": {
+    "orderType": "Production",
+    "companyType": "STOCK",
+    "poName": "QA_BINDER-OS"
+  },
+  "timeout": { "page": 15000, "element": 8000, "test": 300000 }
+}

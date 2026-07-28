@@ -1,0 +1,249 @@
+{
+  "navigation": {
+    "chdpdProject": "CHD/PD/707A/QA_BINDER-OS/47"
+  },
+  "_comment": "LABELS (BRAND/MAIN) \u2014 values labelsBrandData.js se. Har component alag TYPE/MATERIAL/PLACEMENT.",
+  "_SIZE_note": "SIZE=width+height+sizeUnit (CM/INCHES/MM). QTY UNIT select.",
+  "ipcs": [
+    {
+      "ipcIndex": 0,
+      "artworks": [
+        {
+          "component": "Pile Yarn",
+          "category": "LABELS (BRAND/MAIN)",
+          "fields": {
+            "TYPE": "Woven (Damask, Taffeta, Satin)",
+            "MATERIAL": "Polyester",
+            "width": "40",
+            "height": "15",
+            "sizeUnit": "CM",
+            "PLACEMENT": "Neck seam (center back)",
+            "ATTACHMENT": "Sew-in",
+            "TESTING REQUIREMENTS": [
+              "Colour Fastness (Wash/Rubbing)"
+            ],
+            "QTY": "1000",
+            "qtyUnit": "PCS",
+            "SURPLUS %": "3",
+            "APPROVAL": "QA Approval",
+            "REMARKS": "auto"
+          }
+        },
+        {
+          "component": "Backing Cloth",
+          "category": "LABELS (BRAND/MAIN)",
+          "fields": {
+            "TYPE": "Printed (Satin, Cotton, Taffeta)",
+            "MATERIAL": "Cotton",
+            "width": "45",
+            "height": "18",
+            "sizeUnit": "CM",
+            "PLACEMENT": "Hem",
+            "ATTACHMENT": "Heat Seal",
+            "TESTING REQUIREMENTS": [
+              "Colour Fastness (Wash/Rubbing)"
+            ],
+            "QTY": "2000",
+            "qtyUnit": "PCS",
+            "SURPLUS %": "4",
+            "APPROVAL": "QA Approval",
+            "REMARKS": "auto"
+          }
+        }
+      ]
+    },
+    {
+      "ipcIndex": 1,
+      "artworks": [
+        {
+          "component": "Front Panel",
+          "category": "LABELS (BRAND/MAIN)",
+          "fields": {
+            "TYPE": "Heat Transfer",
+            "MATERIAL": "Satin",
+            "width": "50",
+            "height": "21",
+            "sizeUnit": "CM",
+            "PLACEMENT": "Side seam",
+            "ATTACHMENT": "Adhesive Back",
+            "TESTING REQUIREMENTS": [
+              "Colour Fastness (Wash/Rubbing)"
+            ],
+            "QTY": "3000",
+            "qtyUnit": "PCS",
+            "SURPLUS %": "5",
+            "APPROVAL": "QA Approval",
+            "REMARKS": "auto"
+          }
+        },
+        {
+          "component": "Back Panel",
+          "category": "LABELS (BRAND/MAIN)",
+          "fields": {
+            "TYPE": "Embroidered",
+            "MATERIAL": "Recycled Polyester",
+            "width": "55",
+            "height": "24",
+            "sizeUnit": "CM",
+            "PLACEMENT": "Corner (bedding)",
+            "ATTACHMENT": "Sew-in",
+            "TESTING REQUIREMENTS": [
+              "Colour Fastness (Wash/Rubbing)"
+            ],
+            "QTY": "4000",
+            "qtyUnit": "PCS",
+            "SURPLUS %": "6",
+            "APPROVAL": "QA Approval",
+            "REMARKS": "auto"
+          }
+        }
+      ]
+    },
+    {
+      "ipcIndex": 2,
+      "artworks": [
+        {
+          "component": "Terry Ground",
+          "category": "LABELS (BRAND/MAIN)",
+          "fields": {
+            "TYPE": "Leather Patch",
+            "MATERIAL": "Organic Cotton",
+            "width": "60",
+            "height": "27",
+            "sizeUnit": "CM",
+            "PLACEMENT": "Custom",
+            "ATTACHMENT": "Heat Seal",
+            "TESTING REQUIREMENTS": [
+              "Colour Fastness (Wash/Rubbing)"
+            ],
+            "QTY": "5000",
+            "qtyUnit": "PCS",
+            "SURPLUS %": "7",
+            "APPROVAL": "QA Approval",
+            "REMARKS": "auto"
+          }
+        },
+        {
+          "component": "Dobby Border",
+          "category": "LABELS (BRAND/MAIN)",
+          "fields": {
+            "TYPE": "Woven (Damask, Taffeta, Satin)",
+            "MATERIAL": "Polyester",
+            "width": "65",
+            "height": "30",
+            "sizeUnit": "CM",
+            "PLACEMENT": "Neck seam (center back)",
+            "ATTACHMENT": "Adhesive Back",
+            "TESTING REQUIREMENTS": [
+              "Colour Fastness (Wash/Rubbing)"
+            ],
+            "QTY": "6000",
+            "qtyUnit": "PCS",
+            "SURPLUS %": "8",
+            "APPROVAL": "QA Approval",
+            "REMARKS": "auto"
+          }
+        }
+      ]
+    },
+    {
+      "ipcIndex": 3,
+      "artworks": [
+        {
+          "component": "Face Fabric",
+          "category": "LABELS (BRAND/MAIN)",
+          "fields": {
+            "TYPE": "Printed (Satin, Cotton, Taffeta)",
+            "MATERIAL": "Cotton",
+            "width": "70",
+            "height": "33",
+            "sizeUnit": "CM",
+            "PLACEMENT": "Hem",
+            "ATTACHMENT": "Sew-in",
+            "TESTING REQUIREMENTS": [
+              "Colour Fastness (Wash/Rubbing)"
+            ],
+            "QTY": "7000",
+            "qtyUnit": "PCS",
+            "SURPLUS %": "9",
+            "APPROVAL": "QA Approval",
+            "REMARKS": "auto"
+          }
+        },
+        {
+          "component": "Lining",
+          "category": "LABELS (BRAND/MAIN)",
+          "fields": {
+            "TYPE": "Heat Transfer",
+            "MATERIAL": "Satin",
+            "width": "75",
+            "height": "36",
+            "sizeUnit": "CM",
+            "PLACEMENT": "Side seam",
+            "ATTACHMENT": "Heat Seal",
+            "TESTING REQUIREMENTS": [
+              "Colour Fastness (Wash/Rubbing)"
+            ],
+            "QTY": "8000",
+            "qtyUnit": "PCS",
+            "SURPLUS %": "10",
+            "APPROVAL": "QA Approval",
+            "REMARKS": "auto"
+          }
+        }
+      ]
+    },
+    {
+      "ipcIndex": 4,
+      "artworks": [
+        {
+          "component": "Woven Body",
+          "category": "LABELS (BRAND/MAIN)",
+          "fields": {
+            "TYPE": "Embroidered",
+            "MATERIAL": "Recycled Polyester",
+            "width": "80",
+            "height": "39",
+            "sizeUnit": "CM",
+            "PLACEMENT": "Corner (bedding)",
+            "ATTACHMENT": "Adhesive Back",
+            "TESTING REQUIREMENTS": [
+              "Colour Fastness (Wash/Rubbing)"
+            ],
+            "QTY": "9000",
+            "qtyUnit": "PCS",
+            "SURPLUS %": "11",
+            "APPROVAL": "QA Approval",
+            "REMARKS": "auto"
+          }
+        },
+        {
+          "component": "Satin Binding",
+          "category": "LABELS (BRAND/MAIN)",
+          "fields": {
+            "TYPE": "Leather Patch",
+            "MATERIAL": "Organic Cotton",
+            "width": "85",
+            "height": "42",
+            "sizeUnit": "CM",
+            "PLACEMENT": "Custom",
+            "ATTACHMENT": "Sew-in",
+            "TESTING REQUIREMENTS": [
+              "Colour Fastness (Wash/Rubbing)"
+            ],
+            "QTY": "10000",
+            "qtyUnit": "PCS",
+            "SURPLUS %": "12",
+            "APPROVAL": "QA Approval",
+            "REMARKS": "auto"
+          }
+        }
+      ]
+    }
+  ],
+  "timeout": {
+    "page": 15000,
+    "element": 8000,
+    "test": 900000
+  }
+}

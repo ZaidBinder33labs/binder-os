@@ -1,0 +1,14 @@
+{
+  "_comment": "Real-sounding + [QA] ",
+  "buyer": {
+    "mode": "smart",
+    "buyerName": "Global Home Textiles {{random}} [QA]",
+    "endCustomer": "Urban Living Retail",
+    "contactPerson": "Rajesh Kumar"
+  },
+  "timeout": {
+    "page": 15000,
+    "element": 8000,
+    "test": 300000
+  }
+}
