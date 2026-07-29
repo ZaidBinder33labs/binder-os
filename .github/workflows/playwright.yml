@@ -4,6 +4,7 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+  workflow_dispatch:        # ← manual "Run workflow" button (Actions tab me dikhega)
 jobs:
   test:
     timeout-minutes: 60
