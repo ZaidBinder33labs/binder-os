@@ -15,32 +15,32 @@ const SKU_INPUT = 'input[placeholder="e.g., SKU-001"]';
 const COMP_INPUT = 'input[placeholder="Type component name"]';
 
 // ═══════════════════════════════════════════════════════════════
-//  Binder-frontend source (Step0.jsx + GenerateFactoryCode.jsx)
-//  padh kar likha gaya. Har selector ka source-proof:
+//  Written by reading the Binder-frontend source (Step0.jsx +
+//  GenerateFactoryCode.jsx). Source-proof for each selector:
 //
-//  1. SKU card: ek card = theek ek "e.g., SKU-001" input.
-//     Subproduct BUYER SKU alag hai (dropdown, "Select or type buyer SKU").
-//  2. "SKU N" <h3> SIRF skus.length > 1 pe. SKU Remove bhi tabhi.
-//  3. PRODUCT = TenantDropdown creatable. Type karne pe 'Add "..."'
-//     option banta hai — usse click NAHI karna (exact match only).
-//  4. PLACEMENT widget components.length pe morph karta hai:
+//  1. SKU card: one card = exactly one "e.g., SKU-001" input.
+//     Subproduct BUYER SKU is separate (dropdown, "Select or type buyer SKU").
+//  2. "SKU N" <h3> ONLY when skus.length > 1. SKU Remove only then too.
+//  3. PRODUCT = TenantDropdown creatable. Typing creates an 'Add "..."'
+//     option — do NOT click it (exact match only).
+//  4. The PLACEMENT widget morphs on components.length:
 //       1 comp  → dropdown ['TOP PLACEMENT']
 //       2 comps → dropdown ['TOP PLACEMENT','BOTTOM PLACEMENT']
 //       3+      → free-text <input placeholder="Type placement">
-//     ISLIYE: rows PEHLE banao, PHIR bharo.
-//  5. react-select menu document.body me portal hota hai —
-//     page level se dhoondo, card ke andar nahi.
-//  6. addSku() exactly 1 khali SKU deta hai (1 component row ke saath).
+//     THEREFORE: create the rows FIRST, THEN fill them.
+//  5. The react-select menu portals to document.body —
+//     search at page level, not inside the card.
+//  6. addSku() gives exactly 1 empty SKU (with 1 component row).
 //  7. SAVE = handleSaveStep0:
-//       • koi network call nahi, sirf local state + localStorage
+//       • no network call, only local state + localStorage
 //       • button text 'Save' → 'Saved' (success) / 'Not Saved' (error)
-//       • setShowIPCPopup(true) → "IPC Codes Generated" POPUP khulta hai
-//         jisme [Add More SKU] [Next] buttons hain.
-//     Pehle "Next → nahi mila" ISI popup ki wajah se tha.
-//  8. Step0 ka apna Next button text = "Next →" (arrow text me hai).
-//     Popup ka Next sirf "Next". Dono alag hain.
+//       • setShowIPCPopup(true) → the "IPC Codes Generated" POPUP opens
+//         with [Add More SKU] [Next] buttons.
+//     The earlier "Next → not found" was because of THIS popup.
+//  8. Step0's own Next button text = "Next →" (the arrow is in the text).
+//     The popup's Next is just "Next". The two are different.
 //
-//  RULE: field hamesha LABEL se. Page-level flat index kabhi nahi.
+//  RULE: always resolve a field by LABEL. Never a page-level flat index.
 // ═══════════════════════════════════════════════════════════════
 
 // ─── locators ────────────────────────────────────────────────────
@@ -60,16 +60,16 @@ const componentRow = (block, i) => block.locator(COMP_INPUT).nth(i).locator(
   '][last()]'
 );
 
-// ─── setters (har ek verify karta hai) ───────────────────────────
+// ─── setters (each one verifies) ─────────────────────────────────
 
 async function setText(scope, label, value, tag) {
   const el = field(scope, label).locator('input, textarea').first();
-  if (!await el.count()) throw new Error(`${tag}: "${label}" label ka input nahi mila`);
+  if (!await el.count()) throw new Error(`${tag}: input for label "${label}" not found`);
   await el.scrollIntoViewIfNeeded();
-  await expect(el, `${tag} editable nahi`).toBeEditable();
+  await expect(el, `${tag} not editable`).toBeEditable();
   await el.fill('');
   await el.fill(String(value));
-  await expect(el, `${tag}: value set nahi hui`).toHaveValue(String(value));
+  await expect(el, `${tag}: value was not set`).toHaveValue(String(value));
 }
 
 async function pickOption(page, control, value, tag) {
@@ -83,9 +83,9 @@ async function pickOption(page, control, value, tag) {
       await control.click();
 
       const menu = page.locator('[class*="-menu"]').first();   // body-portal
-      await expect(menu, `${tag}: menu nahi khula`).toBeVisible();
+      await expect(menu, `${tag}: menu did not open`).toBeVisible();
 
-      // 'Add "..."' create-option ko explicitly chhodo
+      // explicitly skip the 'Add "..."' create-option
       const findReal = () => menu.locator('[class*="-option"]')
         .filter({ hasNotText: /^Add "/ })
         .filter({ hasText: rx })
@@ -98,16 +98,16 @@ async function pickOption(page, control, value, tag) {
       }
       if (!await opt.isVisible().catch(() => false)) {
         const all = await menu.locator('[class*="-option"]').allInnerTexts();
-        throw new Error(`"${value}" list mein nahi. Available: ${JSON.stringify(all)}`);
+        throw new Error(`"${value}" not in list. Available: ${JSON.stringify(all)}`);
       }
 
       await opt.click();
-      await expect(control, `${tag}: select ke baad value nahi dikhi`).toContainText(rx);
+      await expect(control, `${tag}: value not shown after select`).toContainText(rx);
       await page.keyboard.press('Escape');
       return;
     } catch (e) {
       await page.keyboard.press('Escape').catch(() => { });
-      if (a === 3) throw new Error(`${tag} — 3 try fail: ${e.message}`);
+      if (a === 3) throw new Error(`${tag} — 3 attempts failed: ${e.message}`);
       console.log(`     retry ${a}/3 — ${tag}`);
     }
   }
@@ -115,14 +115,14 @@ async function pickOption(page, control, value, tag) {
 
 async function setSelect(page, scope, label, value, tag) {
   const c = field(scope, label).locator('[class*="-control"]').first();
-  if (!await c.count()) throw new Error(`${tag}: "${label}" ka dropdown nahi mila`);
+  if (!await c.count()) throw new Error(`${tag}: dropdown for "${label}" not found`);
   await pickOption(page, c, value, tag);
 }
 
-/** placement: 1–2 comps pe dropdown, 3+ pe free-text (source: Step0.jsx) */
+/** placement: dropdown for 1–2 comps, free-text for 3+ (source: Step0.jsx) */
 async function setPlacement(page, row, value, tag) {
   const box = field(row, 'ASSIGN PLACEMENT');
-  if (!await box.count()) throw new Error(`${tag}: ASSIGN PLACEMENT label nahi mila`);
+  if (!await box.count()) throw new Error(`${tag}: ASSIGN PLACEMENT label not found`);
 
   if (await box.locator('[class*="-control"]').count()) {
     return pickOption(page, box.locator('[class*="-control"]').first(), value, tag);
@@ -130,10 +130,10 @@ async function setPlacement(page, row, value, tag) {
   const input = box.locator('input').first();
   if (!await input.count()) {
     const html = await box.evaluate(el => el.outerHTML.slice(0, 400)).catch(() => '?');
-    throw new Error(`${tag}: na dropdown na input.\n     HTML: ${html}`);
+    throw new Error(`${tag}: neither dropdown nor input.\n     HTML: ${html}`);
   }
   await input.fill(String(value));
-  await expect(input, `${tag}: value set nahi hui`).toHaveValue(String(value));
+  await expect(input, `${tag}: value was not set`).toHaveValue(String(value));
 }
 
 // ─── JSON → SKU list ─────────────────────────────────────────────
@@ -161,32 +161,32 @@ const tpl = v => typeof v !== 'string' ? v
       return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
     })());
 
-/** Browser se PEHLE config check — UI rules Step0.jsx se */
+/** Validate the config BEFORE the browser — UI rules from Step0.jsx */
 function validateConfig(skus) {
   const bad = [];
   skus.forEach((s, i) => {
     const c = s.components ?? [];
-    if (!c.length) { bad.push(`SKU ${i + 1}: ek bhi component nahi`); return; }
+    if (!c.length) { bad.push(`SKU ${i + 1}: no components at all`); return; }
     if (c.length === 1 && c[0].placement !== 'TOP PLACEMENT') {
-      bad.push(`SKU ${i + 1}: 1 component pe placement sirf "TOP PLACEMENT" (mila "${c[0].placement}")`);
+      bad.push(`SKU ${i + 1}: with 1 component, placement must be "TOP PLACEMENT" (got "${c[0].placement}")`);
     }
     if (c.length === 2) {
       const ok = ['TOP PLACEMENT', 'BOTTOM PLACEMENT'];
       c.forEach((x, j) => {
         if (!ok.includes(x.placement))
-          bad.push(`SKU ${i + 1} comp ${j + 1}: 2 comps pe ${ok.join('/')} chahiye (mila "${x.placement}")`);
+          bad.push(`SKU ${i + 1} comp ${j + 1}: with 2 comps, need ${ok.join('/')} (got "${x.placement}")`);
       });
     }
     c.forEach((x, j) => {
-      if (!x.name?.trim()) bad.push(`SKU ${i + 1} comp ${j + 1}: name khali`);
-      if (!x.placement?.trim()) bad.push(`SKU ${i + 1} comp ${j + 1}: placement khali`);
+      if (!x.name?.trim()) bad.push(`SKU ${i + 1} comp ${j + 1}: name empty`);
+      if (!x.placement?.trim()) bad.push(`SKU ${i + 1} comp ${j + 1}: placement empty`);
     });
   });
-  if (bad.length) throw new Error('ipc-spec.json galat:\n  • ' + bad.join('\n  • '));
+  if (bad.length) throw new Error('ipc-spec.json invalid:\n  • ' + bad.join('\n  • '));
 }
 
 const SKUS = resolveSkus(cfg.formData);
-if (!SKUS.length) throw new Error('ipc-spec.json: ek bhi SKU define nahi');
+if (!SKUS.length) throw new Error('ipc-spec.json: no SKU defined');
 validateConfig(SKUS);
 
 // ─── SKU count converge ──────────────────────────────────────────
@@ -196,10 +196,10 @@ async function removeLastCard(page, locator, kind) {
   const card = locator.last().locator('xpath=ancestor::div[.//*[normalize-space()="Remove"]][1]');
   const btn = card.getByText('Remove', { exact: true }).first();
   if (!await btn.isVisible().catch(() => false)) {
-    throw new Error(`${kind} ka "Remove" nahi mila (abhi ${n})`);
+    throw new Error(`"Remove" for ${kind} not found (currently ${n})`);
   }
   await btn.click();
-  await expect(locator, `${kind} count nahi ghata`).toHaveCount(n - 1);
+  await expect(locator, `${kind} count did not decrease`).toHaveCount(n - 1);
 }
 
 async function ensureSkuCount(page, want) {
@@ -209,15 +209,15 @@ async function ensureSkuCount(page, want) {
     if (have === want) { console.log(`  ${want} SKU card ready\n`); return; }
     if (have < want) {
       const btn = page.getByRole('button', { name: 'Add SKU' });
-      await expect(btn, '"Add SKU" nahi mila').toBeVisible();
+      await expect(btn, '"Add SKU" not found').toBeVisible();
       await btn.click();
-      await expect(cards, 'Add SKU ke baad count nahi badla')
+      await expect(cards, 'count did not change after Add SKU')
         .not.toHaveCount(have, { timeout: T.element });
     } else {
       await removeLastCard(page, cards, 'SKU');
     }
   }
-  throw new Error(`SKU count ${want} pe settle nahi hua (abhi ${await cards.count()})`);
+  throw new Error(`SKU count did not settle at ${want} (currently ${await cards.count()})`);
 }
 
 // ─── pre-save scan ───────────────────────────────────────────────
@@ -235,28 +235,28 @@ async function assertComplete(page) {
       }
       if (!box) continue;
       if (/IMAGE/i.test(name)) {
-        if (/click to upload/i.test(box.textContent)) bad.push(`${name} (image nahi lagi)`);
+        if (/click to upload/i.test(box.textContent)) bad.push(`${name} (no image attached)`);
       } else if (box.querySelector('[class*="-control"]')) {
-        if (box.querySelector('[class*="-placeholder"]')) bad.push(`${name} (dropdown khali)`);
+        if (box.querySelector('[class*="-placeholder"]')) bad.push(`${name} (dropdown empty)`);
       } else {
         const i = box.querySelector('input:not([type="file"]), textarea');
-        if (i && !String(i.value).trim()) bad.push(`${name} (khali)`);
+        if (i && !String(i.value).trim()) bad.push(`${name} (empty)`);
       }
     }
     return bad;
   });
 
   if (empty.length) {
-    console.error(`\n  ${empty.length} required field khali:`);
+    console.error(`\n  ${empty.length} required field(s) empty:`);
     empty.forEach(f => console.error(`     - ${f}`));
-    throw new Error(`${empty.length} required field khali — Save nahi daba rahe`);
+    throw new Error(`${empty.length} required field(s) empty — not clicking Save`);
   }
-  console.log('  saare required fields bhare hain\n');
+  console.log('  all required fields are filled\n');
 }
 
 // ─── SAVE — source-proof verification ────────────────────────────
-// handleSaveStep0: network call NAHI hota. Success = button 'Saved'
-// + IPC popup. Fail = 'Not Saved' ya validation dialog.
+// handleSaveStep0: NO network call. Success = button 'Saved'
+// + IPC popup. Fail = 'Not Saved' or a validation dialog.
 async function saveStep0(page) {
   await page.getByRole('button', { name: /^(Save|Saved|Not Saved)$/ }).first().click();
 
@@ -264,42 +264,42 @@ async function saveStep0(page) {
   const notSaved = page.getByRole('button', { name: 'Not Saved' });
   const popup = page.getByText('IPC Codes Generated');
 
-  await expect(saved.or(notSaved).or(popup).first(), 'Save ka koi outcome nahi dikha')
+  await expect(saved.or(notSaved).or(popup).first(), 'no Save outcome appeared')
     .toBeVisible({ timeout: T.element });
 
   if (await notSaved.isVisible().catch(() => false)) {
-    throw new Error('Save FAIL — button "Not Saved" dikha (validation errors hain)');
+    throw new Error('Save FAILED — button "Not Saved" appeared (there are validation errors)');
   }
 
-  // IPC popup khula → codes print karo, phir popup ka "Next"
+  // IPC popup opened → print codes, then click the popup's "Next"
   if (await popup.isVisible().catch(() => false)) {
     const codes = await page.locator('text=/CHD\\/[A-Z0-9]+\\/PO-\\d+\\/IPC-\\d+/').allInnerTexts()
       .catch(() => []);
     console.log(`  IPC codes (${codes.length}):`);
     codes.forEach(c => console.log(`    ${c}`));
     if (codes.length !== SKUS.length) {
-      throw new Error(`IPC count mismatch: ${SKUS.length} SKU bhare par ${codes.length} codes bane`);
+      throw new Error(`IPC count mismatch: ${SKUS.length} SKUs filled but ${codes.length} codes created`);
     }
     console.log(`  ✓ verified: ${SKUS.length} SKU = ${codes.length} IPC`);
     await page.getByRole('button', { name: 'Next', exact: true }).click();
-    await expect(popup, 'IPC popup band nahi hua').toBeHidden();
-    console.log('  Save OK (popup se Next)\n');
-    return 'advanced';   // popup ka Next hi aage le jaata hai (flowPhase badal gaya)
+    await expect(popup, 'IPC popup did not close').toBeHidden();
+    console.log('  Save OK (Next from popup)\n');
+    return 'advanced';   // the popup's Next is what moves us forward (flowPhase changed)
   }
 
   console.log('  Save OK\n');
   return 'saved';
 }
 
-// ─── ek SKU ──────────────────────────────────────────────────────
+// ─── one SKU ─────────────────────────────────────────────────────
 
 async function fillSku(page, i, d) {
   const n = i + 1, id = `SKU${n}`;
   const block = skuBlock(page, i);
-  await expect(block, `${id} block nahi mila`).toBeVisible();
+  await expect(block, `${id} block not found`).toBeVisible();
 
   const own = await block.locator(SKU_INPUT).count();
-  if (own !== 1) throw new Error(`${id} block mein ${own} BUYER SKU input — scoping toot gayi`);
+  if (own !== 1) throw new Error(`${id} block has ${own} BUYER SKU inputs — scoping broke`);
 
   const sku = tpl(d.buyerSku);
   await setSelect(page, block, 'PRODUCT', tpl(d.product), `${id} PRODUCT`);
@@ -314,15 +314,15 @@ async function fillSku(page, i, d) {
   const comps = d.components;
   const rows = block.locator(COMP_INPUT);
 
-  // STEP 1: saari rows PEHLE — placement widget count pe morph karta hai
+  // STEP 1: create ALL rows FIRST — the placement widget morphs on row count
   const addBtn = block.getByRole('button', { name: '+ Add Component' }).first();
   for (let c = await rows.count(); c < comps.length; c++) {
     await addBtn.click();
-    await expect(rows, 'naya component row nahi aaya').toHaveCount(c + 1);
+    await expect(rows, 'new component row did not appear').toHaveCount(c + 1);
   }
-  await expect(rows, `${id}: rows expected nahi`).toHaveCount(comps.length);
+  await expect(rows, `${id}: rows not as expected`).toHaveCount(comps.length);
 
-  // STEP 2: ab bharo
+  // STEP 2: now fill them
   for (let c = 0; c < comps.length; c++) {
     const row = componentRow(block, c);
     await setText(row, 'COMPONENT', comps[c].name, `${id} Comp${c + 1} name`);
@@ -344,20 +344,20 @@ test(`IPC Spec — ${SKUS.length} SKUs`, async ({ page }) => {
 
   for (const nm of ['IPO Management', 'Production']) {
     const b = page.getByRole('button', { name: nm });
-    await expect(b, `"${nm}" nahi mila`).toBeVisible();
+    await expect(b, `"${nm}" not found`).toBeVisible();
     await b.click();
   }
   const projectCode = resolveProject(cfg);
   const proj = page.locator('button').filter({ hasText: projectCode }).first();
-  await expect(proj, `project "${projectCode}" nahi mila`).toBeVisible();
+  await expect(proj, `project "${projectCode}" not found`).toBeVisible();
   await proj.click();
   await page.getByRole('button', { name: 'IPC Spec' }).click();
 
-  await expect(page.locator('text="PRODUCT SPEC"'), 'page load nahi hua')
+  await expect(page.locator('text="PRODUCT SPEC"'), 'page did not load')
     .toBeVisible({ timeout: T.page });
   console.log('PRODUCT SPEC loaded\n');
 
-  console.log(`${SKUS.length} SKU card bana rahe hain`);
+  console.log(`creating ${SKUS.length} SKU card(s)`);
   await ensureSkuCount(page, SKUS.length);
 
   for (let i = 0; i < SKUS.length; i++) {
@@ -365,7 +365,7 @@ test(`IPC Spec — ${SKUS.length} SKUs`, async ({ page }) => {
     try {
       await fillSku(page, i, SKUS[i]);
     } catch (e) {
-      console.error(`\nSKU ${i + 1} FAIL: ${e.message}\n`);
+      console.error(`\nSKU ${i + 1} FAILED: ${e.message}\n`);
       if (cfg.options.screenshot) {
         await page.screenshot({ path: `test-results/sku-${i + 1}-fail.png`, fullPage: true }).catch(() => { });
       }
@@ -376,23 +376,23 @@ test(`IPC Spec — ${SKUS.length} SKUs`, async ({ page }) => {
   if (cfg.options.removeSubproducts !== false) {
     const subs = page.getByText(/^Subproduct \d+$/);
     if (await subs.count()) {
-      console.log(`\n${await subs.count()} subproduct hata rahe hain`);
+      console.log(`\nremoving ${await subs.count()} subproduct(s)`);
       for (let g = 0; g < 40 && await subs.count(); g++) {
         await removeLastCard(page, subs, 'Subproduct');
       }
     }
   }
 
-  console.log('\nSave se pehle verify');
+  console.log('\nverify before Save');
   await assertComplete(page);
 
   console.log('Save');
   const outcome = await saveStep0(page);
 
-  // popup ke Next ne already aage badha diya to Step0 ka "Next →" nahi chahiye
+  // if the popup's Next already moved us forward, Step0's "Next →" isn't needed
   if (outcome !== 'advanced') {
     const next = page.getByRole('button', { name: /^\s*Next/i }).first();
-    await expect(next, '"Next" nahi mila').toBeVisible();
+    await expect(next, '"Next" not found').toBeVisible();
     await next.click();
   }
 

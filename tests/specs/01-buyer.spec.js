@@ -45,21 +45,21 @@ test(`STEP A — Buyer Code (${MODE})`, async ({ page, playwright }) => {
 
   const api = await apiContext(playwright);
 
-// ── REUSE fast-path: Does the fixed buyer already exist? If so, do not touch the UI ──
+  // ── REUSE fast-path: Does the fixed buyer already exist? If so, do not touch the UI ──
   // (In reuse mode, the name is fixed — do not use {{random}} in buyer.json)
   if (MODE === 'reuse') {
     const existing = await findExistingCode(api, buyerName, endCustomer);
     if (existing) {
-      console.log(`  ♻  reuse: buyer pehle se hai → ${existing}`);
+      console.log(`  ♻  reuse: buyer already exists → ${existing}`);
       await apiAssertBuyerExists(api, existing);
       writeRuntime(BUYER_FILE, { code: existing, buyerName, endCustomer, mode: MODE, reused: true });
       await api.dispose();
       return;
     }
-    console.log('  reuse: buyer nahi mila — ab bana rahe hain');
+    console.log('  reuse: buyer not found — creating it now');
   }
 
-// ── UI: Navigate to the buyer form ──
+  // ── UI: Navigate to the buyer form ──
   // Path (source/screenshots): Code Creation → "Buyer" (left col) →
   //   panel opens → "Generate Buyer Code" → form.
   await page.goto('/');
@@ -90,7 +90,7 @@ test(`STEP A — Buyer Code (${MODE})`, async ({ page, playwright }) => {
   let code;
 
   if (await successHeading.isVisible().catch(() => false)) {
-  // ── UI SUCCESS: Large monospace code capture ──
+    // ── UI SUCCESS: Large monospace code capture ──
     // markup: <span class="font-mono ...">{generatedCode}</span>
     const codeEl = page.locator('span.font-mono').first();
     await expect(codeEl, 'Code span not found on the success screen').toBeVisible();
@@ -105,17 +105,17 @@ test(`STEP A — Buyer Code (${MODE})`, async ({ page, playwright }) => {
     const m = txt.match(/code\s+([A-Za-z0-9-]+)/i);
     code = m ? m[1] : null;
     if (!code) {
-     // If not found via toast, look it up via API
+      // If not found via toast, look it up via API
       code = await findExistingCode(api, buyerName, endCustomer);
     }
     if (!code) throw new Error(`Duplicate found but existing code could not be extracted:"${txt}"`);
-    console.log(`  ♻  duplicate → existing code use: ${code}`);
+    console.log(`  ♻  duplicate → using existing code: ${code}`);
   }
 
- // ── API VERIFY (both paths): code must exist in the backend list ──
+  // ── API VERIFY (both paths): code must exist in the backend list ──
   await apiAssertBuyerExists(api, code);
 
-// ── FIELD-LEVEL read-back: Was every field saved correctly in the backend? ──
+  // ── FIELD-LEVEL read-back: Was every field saved correctly in the backend? ──
   // (Not just "does the code exist?" — verify buyerName/endCustomer/contactPerson as well.
   //  NOTE: In reuse/duplicate cases, the record fields will contain the ORIGINAL creation data;
   //  therefore, field-level verification should only run when a NEW record is created — otherwise, existing data will cause a mismatch.)
@@ -126,7 +126,7 @@ test(`STEP A — Buyer Code (${MODE})`, async ({ page, playwright }) => {
       contactPerson: contact,
     });
   } else {
-    console.log(`  ℹ reuse/existing buyer — field-verify skip (data belongs to the original creation)`);
+    console.log(`  ℹ reuse/existing buyer — field-verify skipped (data belongs to the original creation)`);
   }
 
   // ── runtime handoff ──
@@ -135,7 +135,7 @@ test(`STEP A — Buyer Code (${MODE})`, async ({ page, playwright }) => {
     reused: !(await successHeading.isVisible().catch(() => false)),
   });
 
-  console.log(`\n✅ BUYER — code ${code} ready (02-ipo will select from this )\n`);
+  console.log(`\n✅ BUYER — code ${code} ready (02-ipo will select from this)\n`);
   await api.dispose();
 });
 

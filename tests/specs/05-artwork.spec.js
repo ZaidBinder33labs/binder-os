@@ -7,9 +7,9 @@
 //   • COMPONENT dropdown (top) → "+ Add Artwork Material"
 //   • Per material: ARTWORK CATEGORY (TenantDropdown, 17 options) → fields
 //   • ARTWORK IS OPTIONAL (source: "artwork/labeling is optional",
-//     "No at least one material required"). Isliye JSON me:
-//       - components: []  ya skip:true  → sirf ✓ mark (kuch nahi bharo)
-//       - components with artworks[]    → categories bharo
+//     "No at least one material required"). So in the JSON:
+//       - components: []  or skip:true  → just mark ✓ (fill nothing)
+//       - components with artworks[]    → fill categories
 //   • 17 categories: LabelsBrand, CareComposition, RfidSecurity, LawLabel,
 //     HangTagSeals, HeatTransfer, UpcBarcode, PriceTicket, AntiCounterfeit,
 //     QcInspection, BellyBand, SizeLabels, TagsSpecial, FlammabilitySafety,
@@ -34,13 +34,13 @@ test(`PART-2 ARTWORK — ${cfg.ipcs.length} IPC(s)`, async ({ page }) => {
   page.on('dialog', d => d.accept().catch(() => {}));
   console.log(`\n${cfg.navigation.chdpdProject} | ARTWORK\n`);
 
-  // navigate → IPC selector (BOM pehle ho chuka hona chahiye)
+  // navigate → IPC selector (BOM must be done first)
   await gotoProject(page, resolveProject(cfg), dismissAddLater);
   await page.getByRole('button', { name: 'IPC Spec' }).click();
 
   const step0 = page.locator('text="PRODUCT SPEC"');
   const selector = page.getByText('Select SKU to proceed');
-  await expect(step0.or(selector).first(), 'na PRODUCT SPEC na selector')
+  await expect(step0.or(selector).first(), 'neither PRODUCT SPEC nor selector')
     .toBeVisible({ timeout: cfg.timeout.page });
   if (await step0.isVisible().catch(() => false)) {
     await page.getByRole('button', { name: /^(Save|Saved|Not Saved)$/ }).first().click();
@@ -55,19 +55,19 @@ test(`PART-2 ARTWORK — ${cfg.ipcs.length} IPC(s)`, async ({ page }) => {
     console.log(`── IPC index ${job.ipcIndex} ──────────────`);
     await openIpc(page, job.ipcIndex);
 
-    // ── PEHLE ensure ipcFlow load hua (BOM step render ho gaya) ──
+    // ── FIRST ensure ipcFlow loaded (BOM step rendered) ──
     // Source: switch(currentStep) — case 0=Step2(BOM), case 1=Step4(Artwork).
-    // Sirf EK step render hota hai. Stepper button click => setCurrentStep(1).
+    // Only ONE step renders. Clicking the stepper button => setCurrentStep(1).
     await expect(page.getByRole('heading', { name: /PART-1 BOM/i }).or(page.getByText('Select component')).first(),
-      'ipcFlow (BOM step) load nahi hua').toBeVisible({ timeout: cfg.timeout.page });
+      'ipcFlow (BOM step) did not load').toBeVisible({ timeout: cfg.timeout.page });
 
-    // ── Step 1 (BOM) se Step 2 (Artwork) pe shift ──
+    // ── shift from Step 1 (BOM) to Step 2 (Artwork) ──
     // Source: <button title="Go to Artwork & Labeling"> (progress bar circle)
     const artworkBtn = page.locator('button[title*="Artwork"]').first();
-    await expect(artworkBtn, 'Artwork step-button (title) nahi mila').toBeVisible({ timeout: cfg.timeout.element });
+    await expect(artworkBtn, 'Artwork step-button (title) not found').toBeVisible({ timeout: cfg.timeout.element });
     await artworkBtn.scrollIntoViewIfNeeded();
 
-    // click + verify currentStep badla: BOM title JAAYE, Artwork title AAYE
+    // click + verify currentStep changed: BOM title GONE, Artwork title PRESENT
     for (let tryClick = 1; tryClick <= 3; tryClick++) {
       await artworkBtn.click();
       await page.waitForTimeout(600);
@@ -75,19 +75,19 @@ test(`PART-2 ARTWORK — ${cfg.ipcs.length} IPC(s)`, async ({ page }) => {
       console.log(`     ↻ step-click retry ${tryClick}/3`);
     }
 
-    // ── VERIFY (Part-1 jaisa): title + subtitle + COMPONENT dikhe ──
-    // '&' ke liye regex (getByText exact '&' pe flaky hota hai)
+    // ── VERIFY (like Part-1): title + subtitle + COMPONENT visible ──
+    // regex for '&' (getByText is flaky on exact '&')
     await expect(page.getByRole('heading', { name: /PART-2 ARTWORK/i }),
-      'Artwork title nahi dikha — step shift fail').toBeVisible({ timeout: cfg.timeout.page });
+      'Artwork title not visible — step shift failed').toBeVisible({ timeout: cfg.timeout.page });
     await expect(page.getByText(/Artwork .* packaging materials/i),
-      'Artwork subtitle nahi dikha').toBeVisible();
+      'Artwork subtitle not visible').toBeVisible();
     await expect(field(scopeAll(page), 'COMPONENT').first(),
-      'COMPONENT dropdown nahi dikha').toBeVisible();
+      'COMPONENT dropdown not visible').toBeVisible();
     console.log('  ✓ PART-2 ARTWORK & LABELING screen verified');
 
     const arts = job.artworks ?? [];
     if (arts.length === 0) {
-      console.log('  (artwork optional — skip, sirf save)');
+      console.log('  (artwork optional — skip, save only)');
     }
 
     for (let a = 0; a < arts.length; a++) {
@@ -97,8 +97,8 @@ test(`PART-2 ARTWORK — ${cfg.ipcs.length} IPC(s)`, async ({ page }) => {
       // COMPONENT select
       if (art.component) await setAny(page, scope, 'COMPONENT', art.component, 'COMPONENT');
 
-      // Add Artwork Material — har artwork ke liye ek naya material card.
-      // Pehli baar bhi "Add" chahiye (empty state me sirf button dikhta hai).
+      // Add Artwork Material — a new material card for each artwork.
+      // Needed the first time too (empty state shows only the button).
       const addBtn = page.getByRole('button', { name: '+ Add Artwork Material' });
       if (await addBtn.isVisible().catch(()=>false)) {
         await addBtn.click();
@@ -110,14 +110,14 @@ test(`PART-2 ARTWORK — ${cfg.ipcs.length} IPC(s)`, async ({ page }) => {
       console.log(`  category: ${art.category}`);
       await page.waitForTimeout(400);
 
-      // category ke fields — source-exact handling
+      // category fields — source-exact handling
       const f = art.fields ?? {};
 
-      // SIZE = width + height + sizeUnit (3 alag input, ek SIZE row me)
+      // SIZE = width + height + sizeUnit (3 separate inputs, one SIZE row)
       if (f.width)    await page.getByPlaceholder(/width/i).first().fill(String(f.width));
       if (f.height)   await page.getByPlaceholder(/height/i).first().fill(String(f.height));
       // SIZE UNIT = TenantDropdown (react-select), values CM/KGS/PCS (source).
-      // HEIGHT input ke turant baad wala react-select control.
+      // The react-select control right after the HEIGHT input.
       if (f.sizeUnit) {
         const heightBox = page.getByPlaceholder(/height/i).first();
         const sizeUnitCtrl = heightBox.locator(
@@ -130,7 +130,7 @@ test(`PART-2 ARTWORK — ${cfg.ipcs.length} IPC(s)`, async ({ page }) => {
       if (f.width || f.height) console.log(`     SIZE: ${f.width}x${f.height} ${f.sizeUnit||''}`);
 
       // QTY UNIT = native <select> with CM/KGS/PCS (source: ARTWORK_QTY_UNIT_OPTIONS).
-      // UNIT label ke neeche wala select. Pehli "Select" option skip karke value set.
+      // The select under the UNIT label. Skip the first "Select" option and set the value.
       if (f.qtyUnit) {
         const unitSelect = field(scope, 'UNIT').locator('select').first()
           .or(page.locator('select').filter({ hasText: /Select|CM|KGS|PCS/ }).last());
@@ -141,7 +141,7 @@ test(`PART-2 ARTWORK — ${cfg.ipcs.length} IPC(s)`, async ({ page }) => {
         }
       }
 
-      // baaki fields (label se)
+      // remaining fields (by label)
       const skip = new Set(['width','height','sizeUnit','qtyUnit']);
       for (const [lab, val] of Object.entries(f)) {
         if (skip.has(lab)) continue;
@@ -152,7 +152,7 @@ test(`PART-2 ARTWORK — ${cfg.ipcs.length} IPC(s)`, async ({ page }) => {
           await page.getByRole('radio', { name: val }).last().check().catch(() => {});
           console.log(`     ${lab}: ${val}`);
         } else if (Array.isArray(val)) {
-          // ARTWORK TESTING = MultiSelectDropdown (BOM se alag widget)
+          // ARTWORK TESTING = MultiSelectDropdown (a different widget from BOM)
           await setMultiSelect(page, field(scope, lab), val, lab);
           console.log(`     ${lab}: [${val.join(', ')}]`);
         } else {
@@ -161,17 +161,17 @@ test(`PART-2 ARTWORK — ${cfg.ipcs.length} IPC(s)`, async ({ page }) => {
         }
       }
 
-      // ── SAVE (har component ke baad — Part-1 jaisa) ──
+      // ── SAVE (after each component — like Part-1) ──
       await page.getByRole('button', { name: /^(Save|Saved|Not Saved)$/ }).first().click();
       const vDialog = page.getByText('Please fill the following');
       const okBtn = page.getByRole('button', { name: 'Saved' });
       const noBtn = page.getByRole('button', { name: 'Not Saved' });
-      await expect(okBtn.or(noBtn).or(vDialog).first(), 'save outcome nahi').toBeVisible({ timeout: cfg.timeout.element });
+      await expect(okBtn.or(noBtn).or(vDialog).first(), 'no save outcome').toBeVisible({ timeout: cfg.timeout.element });
       if (await vDialog.isVisible().catch(() => false)) {
         const items = await vDialog.locator('xpath=ancestor::div[2]').innerText().catch(() => '?');
-        throw new Error(`SAVE FAIL (${art.component}) — validation:\n${items}`);
+        throw new Error(`SAVE FAILED (${art.component}) — validation:\n${items}`);
       }
-      if (await noBtn.isVisible().catch(() => false)) throw new Error(`SAVE FAIL (${art.component}) — Not Saved`);
+      if (await noBtn.isVisible().catch(() => false)) throw new Error(`SAVE FAILED (${art.component}) — Not Saved`);
       console.log(`  ✓ SAVED: ${art.component}\n`);
     }
 

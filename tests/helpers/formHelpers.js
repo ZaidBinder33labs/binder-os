@@ -2,10 +2,10 @@ import { expect } from "@playwright/test";
 import fs from "fs";
 import path from "path";
 
-/** saare react-select controls */
+/** all react-select controls */
 const controls = (page) => page.locator('[class*="-control"]');
 
-/** DISCOVERY — asli options print karo */
+/** DISCOVERY — print the actual options */
 export async function dumpDropdown(page, index) {
   const c = controls(page).nth(index);
   await c.scrollIntoViewIfNeeded();
@@ -25,7 +25,7 @@ export async function dumpAllDropdowns(page) {
   for (let i = 0; i < total; i++) await dumpDropdown(page, i);
 }
 
-/** react-select — type karke filter, phir click. Fail fast. */
+/** react-select — type to filter, then click. Fail fast. */
 export async function selectDropdown(page, index, value) {
   const c = controls(page).nth(index);
   await c.scrollIntoViewIfNeeded();
@@ -41,7 +41,7 @@ export async function selectDropdown(page, index, value) {
   console.log(`dropdown[${index}] = ${value}`);
 }
 
-/** fill + verify — clear ho gaya to turant pata chalega */
+/** fill + verify — if it clears, you'll know immediately */
 export async function fillAndVerify(page, placeholder, value, index = 0) {
   const el = page.getByPlaceholder(placeholder).nth(index);
   await el.scrollIntoViewIfNeeded();
@@ -53,22 +53,22 @@ export async function fillAndVerify(page, placeholder, value, index = 0) {
 /**
  * Image upload — SCOPED + VERIFIED
  *
- * ⚠️ Purana version `page.locator('input[type=file]').first()` use karta tha,
- *    yani poore page ka PEHLA file input. Multi-SKU form mein saare uploads
- *    SKU 1 pe hi chadh jaate the aur baaki khali reh jaate the — par log
- *    phir bhi "uploaded" chhaap deta tha. Isliye:
- *      1. scope pass karo (SKU block), page nahi
- *      2. upload ke baad VERIFY karo, blindly log mat karo
+ * ⚠️ The old version used `page.locator('input[type=file]').first()`,
+ *    i.e. the FIRST file input on the whole page. In a multi-SKU form all
+ *    uploads landed on SKU 1 and the rest stayed empty — but the log still
+ *    printed "uploaded". So:
+ *      1. pass a scope (the SKU block), not the page
+ *      2. VERIFY after upload, don't blindly log
  *
  * @param {import('@playwright/test').Page} page
- * @param {string} name                 file ka naam (extension ke bina)
- * @param {import('@playwright/test').Locator} [scope]  SKU block; na do to poora page
+ * @param {string} name                 file name (without extension)
+ * @param {import('@playwright/test').Locator} [scope]  SKU block; if omitted, whole page
  */
 export async function uploadFile(page, name, scope) {
   const dir = path.join(process.cwd(), "test-files");
   fs.mkdirSync(dir, { recursive: true });
 
-  // 1x1 PNG — asli image chahiye, txt reject ho sakta hai
+  // 1x1 PNG — a real image is needed, a .txt may be rejected
   const filePath = path.join(dir, `${name}.png`);
   fs.writeFileSync(filePath, Buffer.from(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
@@ -80,31 +80,31 @@ export async function uploadFile(page, name, scope) {
   const fileInputs = root.locator('input[type="file"]');
   const total = await fileInputs.count();
   if (total === 0) {
-    throw new Error(`uploadFile: scope ke andar koi file input nahi mila (${name})`);
+    throw new Error(`uploadFile: no file input found inside the scope (${name})`);
   }
 
-  // block ke andar pehla = main PRODUCT IMAGE (SUBPRODUCT IMAGE baad mein aata hai)
+  // within the block, the first = the main PRODUCT IMAGE (SUBPRODUCT IMAGE comes later)
   const input = fileInputs.first();
 
-  // upload se pehle kitne "Click to upload" khali box the
+  // how many empty "Click to upload" boxes existed before the upload
   const emptyBefore = await root.getByText(/click to upload/i).count();
 
   await input.setInputFiles(filePath);
 
-  // VERIFY 1 — file DOM input pe attach hui?
+  // VERIFY 1 — did the file attach to the DOM input?
   await expect
     .poll(() => input.evaluate(el => (el.files ? el.files.length : 0)), {
       timeout: 5000,
-      message: `${name}: file input pe file attach nahi hui`,
+      message: `${name}: file did not attach to the file input`,
     })
     .toBeGreaterThan(0);
 
-  // VERIFY 2 — UI ne accept kiya? ek "Click to upload" kam hona chahiye
+  // VERIFY 2 — did the UI accept it? one "Click to upload" should be gone
   if (emptyBefore > 0) {
     await expect
       .poll(() => root.getByText(/click to upload/i).count(), {
         timeout: 8000,
-        message: `${name}: UI ne image accept nahi ki — "Click to upload" abhi bhi dikh raha hai`,
+        message: `${name}: UI did not accept the image — "Click to upload" still visible`,
       })
       .toBeLessThan(emptyBefore);
   }

@@ -1,13 +1,13 @@
 // ═══════════════════════════════════════════════════════════════
 //  verifyHelpers.js — PRODUCTION QA ASSERTION LAYER (v2 — FIXED)
-//  Rakhna: tests/verifyHelpers.js
+//  Location: tests/helpers/verifyHelpers.js
 //
-//  KYA BADLA (v1 fail hua tha):
-//   • v1 ne `factory-codes` (COMMITTED) endpoint padha → 0 rows, kyunki
-//     BOM/Artwork/CutSew abhi "DRAFT/section" stage me hain (committed
-//     tabhi hota jab poora wizard + packaging final commit ho).
-//   • FIX: `factory-codes/sections/?ipo_id=` (DRAFT) padho. Yahi wo store
-//     hai jisme har step ka Save turant likhta hai (source verified:
+//  WHAT CHANGED (v1 failed):
+//   • v1 read the `factory-codes` (COMMITTED) endpoint → 0 rows, because
+//     BOM/Artwork/CutSew are still at the "DRAFT/section" stage (committed
+//     only happens once the whole wizard + packaging is finally committed).
+//   • FIX: read `factory-codes/sections/?ipo_id=` (DRAFT). This is the store
+//     each step's Save writes to immediately (source-verified:
 //     GenerateFactoryCode.jsx → persistSection('bomwo'/'artwork'/'cutsew')).
 //
 //  SECTION SHAPE (source: GenerateFactoryCode.jsx ~2430, verified):
@@ -20,10 +20,10 @@
 //     }
 //     section='artwork'→ payload.artworkMaterials[]
 //     section='cutsew' → payload.workOrderSpecs[] / sizes
-//   sku_key = SKU index as string ('0','1',...) — IPC index se map.
+//   sku_key = SKU index as string ('0','1',...) — maps to the IPC index.
 //
-//  KYUN NON-FLAKY: UI pe nahi, backend DRAFT store se padhte hain.
-//   "Save hua" nahi — "SAHI value backend me persist hui?" — asli QA.
+//  WHY NON-FLAKY: we read from the backend DRAFT store, not the UI.
+//   Not "was it saved" — "did the CORRECT value persist in the backend?" — real QA.
 // ═══════════════════════════════════════════════════════════════
 import { expect } from '@playwright/test';
 
@@ -35,28 +35,28 @@ const norm = (v) => String(v ?? '').trim().toLowerCase();
 
 export function assertField(label, actual, expected) {
   expect(norm(actual),
-    `${label}: backend me galat — chaha "${expected}", mila "${actual ?? '(khali)'}"`
+    `${label}: wrong in backend — expected "${expected}", got "${actual ?? '(empty)'}"`
   ).toBe(norm(expected));
 }
 export function assertContains(label, actual, expected) {
   expect(norm(actual).includes(norm(expected)),
-    `${label}: "${expected}" backend value "${actual ?? '(khali)'}" me nahi mila`
+    `${label}: "${expected}" not found in backend value "${actual ?? '(empty)'}"`
   ).toBeTruthy();
 }
 
-// ── DRAFT sections backend se (har step ka Save yahan likhta hai) ──
+// ── DRAFT sections from the backend (each step's Save writes here) ──
 export async function fetchSections(api, ipoId) {
-  if (!ipoId) throw new Error('fetchSections: ipoId chahiye (.runtime/current-ipo.json)');
+  if (!ipoId) throw new Error('fetchSections: ipoId required (.runtime/current-ipo.json)');
   const res = await api.get(`ims/factory-codes/sections/?ipo_id=${encodeURIComponent(ipoId)}`);
   expect(res.ok(), `GET sections ${res.status()}`).toBeTruthy();
   const body = await res.json();
   const sections = Array.isArray(body?.sections) ? body.sections
     : Array.isArray(body) ? body
     : Array.isArray(body?.results) ? body.results : [];
-  return sections; // [] bhi valid (caller decide karega)
+  return sections; // [] is also valid (the caller decides)
 }
 
-// sku_key ('0','1'..) ke against ek section ka payload nikaalo
+// get one section's payload against a sku_key ('0','1'..)
 function sectionPayload(sections, skuKey, sectionName) {
   const row = sections.find(s =>
     String(pick(s, 'sku_key', 'skuKey')) === String(skuKey) &&
@@ -66,7 +66,7 @@ function sectionPayload(sections, skuKey, sectionName) {
 }
 
 // IPC index (0-based) → sku_key. Source (GenerateFactoryCode.jsx:66):
-// format 'product_0' / 'product_1' ... (subproduct_ alag). Main SKU = product_N.
+// format 'product_0' / 'product_1' ... (subproduct_ is separate). Main SKU = product_N.
 const skuKeyForIpc = (ipcIndex) => `product_${ipcIndex}`;
 
 // ═══════════════════════════════════════════════════════════════
@@ -75,18 +75,18 @@ const skuKeyForIpc = (ipcIndex) => `product_${ipcIndex}`;
 export function verifyBomFromSections(sections, ipcIndex, componentName, exp) {
   const skuKey = skuKeyForIpc(ipcIndex);
   const payload = sectionPayload(sections, skuKey, 'bomwo');
-  expect(payload, `IPC${ipcIndex} (sku ${skuKey}): 'bomwo' section backend me nahi`).toBeTruthy();
+  expect(payload, `IPC${ipcIndex} (sku ${skuKey}): 'bomwo' section not in backend`).toBeTruthy();
 
   const rms = payload.rawMaterials || payload.raw_materials || [];
   const rm = rms.find(m => norm(pick(m, 'componentName', 'component_name', 'name')) === norm(componentName));
-  expect(rm, `IPC${ipcIndex} "${componentName}": raw material section me nahi mila`).toBeTruthy();
+  expect(rm, `IPC${ipcIndex} "${componentName}": raw material not found in section`).toBeTruthy();
 
   // FABRIC material fields (source: fabricFiberType/fabricName/fabricComposition/gsm)
   if (exp.fiberType)   assertField(`${componentName} FIBER`,   pick(rm, 'fabricFiberType', 'fiberType'), exp.fiberType);
   if (exp.fabricName)  assertField(`${componentName} FABRIC`,  pick(rm, 'fabricName'), exp.fabricName);
   if (exp.composition) assertContains(`${componentName} COMPOSITION`, pick(rm, 'fabricComposition', 'composition'), exp.composition);
   if (exp.gsm)         assertField(`${componentName} GSM`,     pick(rm, 'gsm', 'GSM'), exp.gsm);
-  // Optional fields (Phase-1 full coverage) — jab JSON me diye ho tabhi verify
+  // Optional fields (Phase-1 full coverage) — verify only when provided in the JSON
   if (exp.fiberCategory)   assertField(`${componentName} FIBER-CAT`, pick(rm, 'fabricFiberCategory', 'fiberCategory'), exp.fiberCategory);
   if (exp.constructionType)assertField(`${componentName} CONSTRUCTION`, pick(rm, 'constructionType'), exp.constructionType);
   if (exp.weaveKnitType)   assertField(`${componentName} WEAVE/KNIT`, pick(rm, 'weaveKnitType'), exp.weaveKnitType);
@@ -103,11 +103,11 @@ export function verifyBomFromSections(sections, ipcIndex, componentName, exp) {
 export function verifyYarnFromSections(sections, ipcIndex, componentName, exp) {
   const skuKey = skuKeyForIpc(ipcIndex);
   const payload = sectionPayload(sections, skuKey, 'bomwo');
-  expect(payload, `IPC${ipcIndex} (sku ${skuKey}): 'bomwo' section backend me nahi`).toBeTruthy();
+  expect(payload, `IPC${ipcIndex} (sku ${skuKey}): 'bomwo' section not in backend`).toBeTruthy();
 
   const rms = payload.rawMaterials || payload.raw_materials || [];
   const rm = rms.find(m => norm(pick(m, 'componentName', 'component_name', 'name')) === norm(componentName));
-  expect(rm, `IPC${ipcIndex} "${componentName}": yarn material section me nahi mila`).toBeTruthy();
+  expect(rm, `IPC${ipcIndex} "${componentName}": yarn material not found in section`).toBeTruthy();
 
   if (exp.fiberType)     assertField(`${componentName} YARN-FIBER`, pick(rm, 'fiberType'), exp.fiberType);
   if (exp.yarnType)      assertField(`${componentName} YARN-TYPE`,  pick(rm, 'yarnType'), exp.yarnType);
@@ -125,23 +125,23 @@ export function verifyYarnFromSections(sections, ipcIndex, componentName, exp) {
 export function verifyArtworkFromSections(sections, ipcIndex, exp) {
   const skuKey = skuKeyForIpc(ipcIndex);
   const payload = sectionPayload(sections, skuKey, 'artwork');
-  expect(payload, `IPC${ipcIndex}: 'artwork' section backend me nahi`).toBeTruthy();
+  expect(payload, `IPC${ipcIndex}: 'artwork' section not in backend`).toBeTruthy();
 
   const ams = payload.artworkMaterials || payload.artwork_materials || [];
   const am = ams.find(m => norm(pick(m, 'artworkCategory', 'category')) === norm(exp.category));
-  expect(am, `IPC${ipcIndex}: artwork (${exp.category}) section me nahi mila`).toBeTruthy();
+  expect(am, `IPC${ipcIndex}: artwork (${exp.category}) not found in section`).toBeTruthy();
   if (exp.category) assertField(`IPC${ipcIndex} CATEGORY`, pick(am, 'artworkCategory', 'category'), exp.category);
   console.log(`  ✅ VERIFY ARTWORK: IPC${ipcIndex} → ${exp.category} (backend match)`);
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  Count/presence sanity — kitne SKU ka bomwo section bana?
+//  Count/presence sanity — how many SKUs have a bomwo section?
 // ═══════════════════════════════════════════════════════════════
 export function verifyBomSectionsPresent(sections, expectedSkuCount) {
   const bomwo = sections.filter(s => norm(pick(s, 'section')) === 'bomwo');
   const uniqueSkus = new Set(bomwo.map(s => String(pick(s, 'sku_key', 'skuKey'))));
   expect(uniqueSkus.size,
-    `BOM sections: ${uniqueSkus.size} SKU ka bomwo mila, chaha ${expectedSkuCount}`
+    `BOM sections: ${uniqueSkus.size} SKU(s) had a bomwo, expected ${expectedSkuCount}`
   ).toBe(expectedSkuCount);
-  console.log(`  ✅ VERIFY: ${expectedSkuCount} SKU ka BOM section backend me confirmed`);
+  console.log(`  ✅ VERIFY: ${expectedSkuCount} SKU(s) BOM section confirmed in backend`);
 }

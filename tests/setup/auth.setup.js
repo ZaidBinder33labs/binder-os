@@ -7,10 +7,10 @@ const authFile = '.auth/user.json';
 
 setup.setTimeout(120_000); // Render backend cold-start allowance — default 60s is too tight
 
-// ── SMART SKIP: agar valid (fresh) token pehle se hai to dobara login mat karo ──
-// Access token ~1 ghante me expire hota hai. Hum thoda conservative — 45 min se
-// purana ho to fresh login. Isse baar-baar test karte waqt login skip = fast,
-// aur token stale ho to auto fresh = reliable (no flaky).
+// ── SMART SKIP: if a valid (fresh) token already exists, don't log in again ──
+// The access token expires in ~1 hour. We're a bit conservative — if it's older
+// than 45 min, do a fresh login. This makes repeated test runs fast (login skipped),
+// and if the token is stale it auto-refreshes = reliable (no flakiness).
 const TOKEN_MAX_AGE_MS = 45 * 60 * 1000; // 45 min
 
 function existingAuthIsFresh() {
@@ -18,9 +18,9 @@ function existingAuthIsFresh() {
     if (!fs.existsSync(authFile)) return false;
     const stat = fs.statSync(authFile);
     const ageMs = Date.now() - stat.mtimeMs;
-    if (ageMs > TOKEN_MAX_AGE_MS) return false;         // purana → fresh login
+    if (ageMs > TOKEN_MAX_AGE_MS) return false;         // old → fresh login
     const state = JSON.parse(fs.readFileSync(authFile, 'utf8'));
-    // access_token maujood hai localStorage me?
+    // is access_token present in localStorage?
     const hasToken = (state.origins ?? []).some(o =>
       (o.localStorage ?? []).some(x => x.name === 'access_token' && x.value)
     );
@@ -31,13 +31,13 @@ function existingAuthIsFresh() {
 }
 
 setup('authenticate', async ({ page }) => {
-  // ── agar valid token hai to login skip ──
+  // ── if a valid token exists, skip login ──
   if (existingAuthIsFresh()) {
     const mins = Math.round((Date.now() - fs.statSync(authFile).mtimeMs) / 60000);
-    console.log(`✅ login SKIP — ${mins}old valid token available (.auth/user.json)`);
+    console.log(`✅ login SKIP — ${mins}m old valid token available (.auth/user.json)`);
     return;
   }
-  console.log('🔑 fresh login kar rahe hain...');
+  console.log('🔑 performing fresh login...');
 
   page.on('response', r => {
     const u = r.url();
@@ -56,8 +56,8 @@ setup('authenticate', async ({ page }) => {
   await page.getByRole('textbox', { name: 'Enter your password' })
     .fill(process.env.BINDER_PASS);
 
-  // wahi button dobara = submit — is baar actual login response ka explicit wait,
-  // taaki cold-start pe vague URL-mismatch ke bajaye clear error mile
+  // same button again = submit — this time we explicitly wait for the actual login
+  // response, so a cold-start gives a clear error instead of a vague URL-mismatch
   const [loginResponse] = await Promise.all([
     page.waitForResponse(
       r => r.url().includes('/api/auth/login/') && r.request().method() === 'POST',
