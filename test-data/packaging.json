@@ -1,0 +1,74 @@
+{
+  "_comment": "PACKAGING (Step5) test config. Header + PO-reconciliation ledger + materials + the POLYBAG~Bale inner-qty calculation. toBeShipped: 'Standalone' (single IPC) or 'Merged' (2+). masterPack is AUTO (STANDARD/ASSORTED) — we do NOT set it, we ASSERT it. packQty maps IPC-code -> qty to pack in the main pack. Materials array = one block per PACKAGING MATERIAL TYPE; keys match the source field names exactly.",
+
+  "navigation": {
+    "chdpdProject": "CHD/PD/707A/QA_BINDER-OS/47"
+  },
+
+  "packaging": {
+    "toBeShipped": "Merged",
+    "casepackQty": "60",
+
+    "_packQty_comment": "IPC-code -> how many pcs of it go in the MAIN pack. Leave blank / omit to leave 'Pending'. Use the real IPC codes generated in Step0 for this project (the runner will list them). balance = poQty - packed must reach Nil.",
+    "packQty": {},
+
+    "_expectMasterPack_comment": "Standalone -> STANDARD, Merged -> ASSORTED. The test asserts the read-only MASTER PACK shows this. 5 IPCs present -> Merged -> ASSORTED.",
+    "expectMasterPack": "ASSORTED",
+
+    "materials": [
+      {
+        "packagingMaterialType": "CARTON BOX",
+        "fields": {
+          "cartonBoxType": "Master Carton",
+          "cartonBoxNoOfPlys": "5 Ply",
+          "cartonBoxBoardGrade": "Kraft (Brown)",
+          "cartonBoxJointType": "Glued/Binded",
+          "cartonBoxBurstingStrength": "200 lbs",
+          "cartonBoxStiffenerRequired": "NO",
+          "cartonBoxLength": "60",
+          "cartonBoxWidth": "40",
+          "cartonBoxHeight": "40",
+          "cartonBoxDimensionsUnit": "CM"
+        },
+        "testing": { "cartonBoxTestingRequirements": ["Bursting Strength Test"] },
+        "surplus": "3",
+        "wastage": "2",
+        "approvalKey": "cartonBoxApproval",
+        "approval": "QA Approval",
+        "remarks": "master carton"
+      },
+
+      {
+        "packagingMaterialType": "POLYBAG~Bale",
+        "fields": {
+          "polybagBalePackagingType": "INNER~CASEAPACK",
+          "polybagBaleInnerCasepack": "20",
+          "polybagBaleType": "Shrink Film",
+          "polybagBaleMaterial": "LDPE",
+          "polybagBaleColour": "Clear/Transparent",
+          "polybagBaleGaugeGsm": "200",
+          "polybagBaleRollWidth": "36",
+          "polybagBaleRollWidthUnit": "CM"
+        },
+        "testing": { "polybagBaleTestingRequirements": ["Tear Strength"] },
+        "surplus": "5",
+        "wastage": "3",
+        "approvalKey": "polybagBaleApproval",
+        "approval": "QA Approval",
+        "remarks": "inner casepack bale",
+
+        "_calc_comment": "★ The one real auto-calc. polybagCount = polybag count input; assdQty maps IPC-code -> ASSD QTY. Test asserts innerQty = casepack/polybagCount and reqMaterial = assd/innerQty (rounded 2dp).",
+        "calc": {
+          "polybagCount": "3",
+          "assdQty": {}
+        }
+      }
+    ]
+  },
+
+  "timeout": {
+    "page": 45000,
+    "element": 15000,
+    "test": 900000
+  }
+}
