@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════
 //  binderHelpers.js — SAARE steps ka shared toolkit
-//  Rakhna: tests/binderHelpers.js
+//  Rakhna: tests/helpers/binderHelpers.js
 //
 //  Yahi wo functions hain jinse Step0 (PRODUCT SPEC) 26s mein
 //  clean pass hua tha. Naye steps INHI ko import karte hain —
@@ -10,6 +10,7 @@
 //  • Field hamesha LABEL se — flat index is app mein hamesha bug hai
 //  • react-select menu document.body me portal hota hai
 //  • TenantDropdown creatable hai — 'Add "..."' option kabhi click nahi
+//    (EXCEPTION: setCreatable — jahan value CREATE karni ho, jaise COLOUR)
 //  • Har action ke baad verify — bina check ke agla step nahi
 // ═══════════════════════════════════════════════════════════════
 import { expect } from '@playwright/test';
@@ -48,9 +49,26 @@ export async function setText(scope, label, value, tag) {
   await expect(el, `${tag}: value set nahi hui`).toHaveValue(String(value));
 }
 
+// ─── react-select TenantDropdown setter (SOURCE-VERIFIED) ───────
+// Source (TenantDropdown.jsx): saare dropdown react-select hain aur
+// creatable=true by default (sirf strictMode wale nahi). Jab typed value
+// list me nahi hoti, react-select `Add "<val>"` row deta hai; use ENTER
+// ya click karne pe value COMMIT hoti hai (source doc: "committed on Enter
+// or by clicking the Add row"). formatCreateLabel = `Add "<input>"`,
+// createOptionPosition="first", menu <body> me portal.
+//
+// Isliye pickOption ab dono handle karta hai — ek hi setter se POORA
+// framework: pehle EXISTING option try, na mile to CREATE (Enter→Add-row).
 export async function pickOption(page, control, value, tag) {
   const esc = String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const rx  = new RegExp(`^\\s*${esc}\\s*$`, 'i');
+  const rx  = new RegExp(`^\\s*${esc}\\s*$`, 'i');   // exact option match
+  const sub = new RegExp(esc, 'i');                  // substring (control verify; brackets-safe)
+  const input = control.locator('input').first();    // react-select ka type-input
+
+  // control me value set ho gayi? (singleValue text). Multi-select me
+  // control me turant na dikhe — caller (chip verify) handle karega.
+  const isSet = async () =>
+    await control.getByText(sub).first().isVisible().catch(() => false);
 
   for (let a = 1; a <= 3; a++) {
     try {
@@ -66,21 +84,39 @@ export async function pickOption(page, control, value, tag) {
         .filter({ hasText: rx })
         .first();
 
+      // 1) bina type kiye exact option dikh raha hai?
       let opt = findReal();
+
+      // 2) nahi → value type karke filter karo
       if (!await opt.isVisible().catch(() => false)) {
+        await input.fill('');
         await page.keyboard.type(String(value), { delay: 40 });
+        await page.waitForTimeout(250);
         opt = findReal();
       }
-      if (!await opt.isVisible().catch(() => false)) {
-        const all = await menu.locator('[class*="-option"]').allInnerTexts();
-        throw new Error(`"${value}" list mein nahi. Available: ${JSON.stringify(all)}`);
+
+      if (await opt.isVisible().catch(() => false)) {
+        // EXISTING option mila → click
+        await opt.click();
+      } else {
+        // 3) EXISTING nahi → CREATABLE create. PRIMARY: Enter (source: commit-on-Enter)
+        await page.keyboard.press('Enter');
+        await page.waitForTimeout(250);
+
+        // 4) FALLBACK: Enter se na laga to `Add "<val>"` row click
+        if (!await isSet() && await menu.isVisible().catch(() => false)) {
+          const addRow = menu.locator('[class*="-option"]')
+            .filter({ hasText: new RegExp(`^\\s*Add\\s+"?${esc}"?`, 'i') })
+            .first();
+          if (await addRow.isVisible().catch(() => false)) await addRow.click();
+        }
       }
 
-      await opt.click();
-      // kuch dropdowns multi-select hain -> control me text turant nahi.
-      // 2.5s me na dikhe to bhi aage badho (chip/verify caller karega).
-      await expect(control, `${tag}: select ke baad value nahi dikhi`)
-        .toContainText(rx, { timeout: 2500 })
+      // VERIFY (soft, brackets-safe substring): kuch dropdowns multi-select hain →
+      // control me turant na dikhe, to bhi aage (chip verify caller karega).
+      // Creatable create pe chhota save-spinner chal sakta → thoda lamba timeout.
+      await expect(control, `${tag}: select/create ke baad value nahi dikhi`)
+        .toContainText(sub, { timeout: 4000 })
         .catch(() => console.log(`     (note: ${tag} control-text verify skip)`));
       await page.keyboard.press('Escape');
       return;
@@ -337,5 +373,103 @@ export async function setMultiSelect(page, box, values, tag) {
     // input clear (agla value ke liye)
     await input.fill('');
     console.log(`       ${val}: ✓`);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CREATABLE dropdown — jahan value pehle se list me NAHI hoti
+//  (jaise YARN COLOUR: placeholder "Select or type Colour").
+//
+//  Normal pickOption 'Add "..."' options ko SKIP karta hai — kyunki
+//  fixed-list dropdowns me wo galat value create kar deta. Par COLOUR
+//  jaise fields creatable hain.
+//
+//  ─ SOURCE-VERIFIED (TenantDropdown.jsx / react-select CreatableSelect) ─
+//  • Component: CreatableSelect (react-select/creatable), unstyled
+//  • formatCreateLabel = `Add "<input>"`  → create-row ka exact text
+//  • createOptionPosition = "first"       → create-row sabse upar
+//  • onCreateOption handler → value commit
+//  • DOC comment (source): "a typed value is committed on ENTER or by
+//    clicking the `Add "…"` row — NOT silently on blur"
+//  • menuPortalTarget = document.body     → menu <body> me portal (isliye
+//    menu ko poore page pe dhoondte hain, scope ke andar nahi)
+//  • Case-insensitive: agar value pehle se list me ho to canonical select
+//
+//  STRATEGY: type karke ENTER (primary — label pe depend nahi, isliye
+//  robust). Agar Enter se value control me na dikhe → 'Add "value"' row
+//  click (fallback). Dono raaste source-justified.
+//
+//  pickOption ko chhua NAHI — baaki saare tests safe rehte hain.
+// ═══════════════════════════════════════════════════════════════
+export async function setCreatable(page, scope, label, value, tag) {
+  const box = field(scope, label);
+  if (!await box.count()) throw new Error(`${tag}: "${label}" label nahi mila`);
+  const control = box.locator('[class*="-control"]').first();
+  if (!await control.count()) throw new Error(`${tag}: "${label}" ka dropdown nahi mila`);
+  // react-select input (control ke andar) — type yahin hota hai
+  const input = control.locator('input').first();
+
+  const val   = String(value);
+  const escRx = val.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // NOTE: \b word-boundary parentheses ke around kaam nahi karta
+  // (jaise "Natural (Greige)") — isliye seedha substring match.
+  const valRx = new RegExp(escRx, 'i');
+
+  // control me value set ho gayi? (singleValue text me dikhti hai)
+  const isSet = async () =>
+    await control.getByText(valRx).first().isVisible().catch(() => false);
+
+  for (let a = 1; a <= 3; a++) {
+    try {
+      await page.keyboard.press('Escape');
+      await control.scrollIntoViewIfNeeded();
+      await control.click();
+
+      // menu <body> me portal hota hai — poore page pe dhoondo
+      const menu = page.locator('[class*="-menu"]').first();
+      await expect(menu, `${tag}: menu nahi khula`).toBeVisible();
+
+      // value type karo (react-select input pe filter chalta hai)
+      await input.fill('');
+      await page.keyboard.type(val, { delay: 40 });
+      await page.waitForTimeout(300);
+
+      // 1) EXISTING exact option (case-insensitive; source canonical-select karta hai)
+      const existing = menu.locator('[class*="-option"]')
+        .filter({ hasNotText: /^Add "/ })
+        .filter({ hasText: new RegExp(`^\\s*${escRx}\\s*$`, 'i') })
+        .first();
+
+      if (await existing.isVisible().catch(() => false)) {
+        await existing.click();
+      } else {
+        // 2) PRIMARY: Enter → onCreateOption commit (source: "committed on Enter")
+        await page.keyboard.press('Enter');
+        await page.waitForTimeout(300);
+
+        // 3) FALLBACK: Enter se na laga to 'Add "value"' row click
+        if (!await isSet()) {
+          if (await menu.isVisible().catch(() => false)) {
+            const addRow = menu.locator('[class*="-option"]')
+              .filter({ hasText: new RegExp(`^\\s*Add\\s+"?${escRx}"?`, 'i') })
+              .first();
+            if (await addRow.isVisible().catch(() => false)) await addRow.click();
+          }
+        }
+      }
+
+      // VERIFY: control me value aa gayi? (creatable me save spinner chal sakta,
+      // isliye thoda lamba timeout). Ye HARD check hai — na dikhe to retry/fail.
+      await expect(control, `${tag}: create/select ke baad "${val}" control me nahi dikhi`)
+        .toContainText(valRx, { timeout: 5000 });
+
+      await page.keyboard.press('Escape');
+      console.log(`     ${tag}: "${val}" set (creatable)`);
+      return;
+    } catch (e) {
+      await page.keyboard.press('Escape').catch(() => {});
+      if (a === 3) throw new Error(`${tag} — 3 try fail: ${e.message}`);
+      console.log(`     retry ${a}/3 — ${tag}`);
+    }
   }
 }

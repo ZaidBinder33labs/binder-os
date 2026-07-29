@@ -9,6 +9,7 @@
 //        = TestingRequirementsInput (input + div.cursor-pointer + .premium-chip, MULTI)
 //   GSM / REMARKS / STITCH LENGTH / etc = text input
 //   DESIGN REF = upload | MATERIAL DESC/COMPOSITION = AUTO (readonly)
+//   COLOUR (yarn) = CREATABLE dropdown → setCreatable (value type+create)
 //
 //  FABRIC cascade: FIBER → FABRIC NAME → (auto: COMPOSITION/CONSTRUCTION/WEAVE)
 //  QUILTING fields: QUILTING TYPE → DESIGN REF → STITCH LENGTH (MM)
@@ -18,7 +19,7 @@ import { test, expect } from '@playwright/test';
 import { dismissAddLater } from '../helpers/helpers.js';
 import { uploadFile } from '../helpers/formHelpers.js';
 import {
-  loadConfig, tpl, setAny, pickOption, field,
+  loadConfig, tpl, setAny, setCreatable, pickOption, field,
   gotoProject, waitForIpcSelector, listIpcCards, openIpc,
   expectIpcStep, setTestingInput, materialCard,
   reportAllIpc, expectBomDone,
@@ -179,7 +180,9 @@ test(`PART-1 BOM & WO — ${cfg.ipcs.length} IPC(s)`, async ({ page, playwright 
         if (y.doublingOptions) { console.log('    → DOUBLING OPTIONS...'); await setAny(page, scope, 'DOUBLING OPTIONS', y.doublingOptions,'YARN DOUBLING'); }
         if (y.plyOptions)      { console.log('    → PLY OPTIONS...');      await setAny(page, scope, 'PLY OPTIONS',      y.plyOptions,      'YARN PLY'); }
         if (y.windingOptions)  { console.log('    → WINDING OPTIONS...');  await setAny(page, scope, 'WINDING OPTIONS',  y.windingOptions,  'YARN WINDING'); }
-        if (y.colour)          { console.log('    → COLOUR...');           await setAny(page, scope, 'COLOUR',           y.colour,          'YARN COLOUR'); }
+        // COLOUR = CREATABLE dropdown ("Select or type Colour"). Value list me nahi hoti,
+        // 'Add "..."' se create hoti hai — isliye setAny nahi, setCreatable.
+        if (y.colour)          { console.log('    → COLOUR...');           await setCreatable(page, scope, 'COLOUR',      y.colour,          'YARN COLOUR'); }
 
         // Advanced group (SPINNING TYPE, FIBER CATEGORY, ORIGIN, CERTIFICATION) — "Advance Spec" ke peeche
         // Yarn ka apna "YARN SPECIFICATIONS" block — usi me Advance Spec dhoondo.
@@ -199,11 +202,20 @@ test(`PART-1 BOM & WO — ${cfg.ipcs.length} IPC(s)`, async ({ page, playwright 
             console.log('    ⚠ yarn Advance Spec button nahi mila');
           }
         }
+        // Advanced yarn fields: source (TenantDropdown) ke hisaab se SPINNING TYPE /
+        // FIBER CATEGORY / ORIGIN creatable dropdowns hain ("Select or type"),
+        // par CERTIFICATION REQUIREMENT plain text input hai ("Enter certificate label").
+        // Isliye auto-detect: dropdown (-control maujood) → setCreatable, warna setAny.
         const tryYAdv = async (label, val, tag) => {
           if (!val) return;
           const box = field(scope, label);
-          if (await box.count()) { console.log(`    → ${label}...`); await setAny(page, scope, label, val, tag); }
-          else console.log(`    ⚠ ${label} nahi dikha — skip`);
+          if (!await box.count()) { console.log(`    ⚠ ${label} nahi dikha — skip`); return; }
+          console.log(`    → ${label}...`);
+          if (await box.locator('[class*="-control"]').count()) {
+            await setCreatable(page, scope, label, val, tag);   // creatable dropdown
+          } else {
+            await setAny(page, scope, label, val, tag);          // text input
+          }
         };
         await tryYAdv('SPINNING TYPE',    y.spinningType,    'YARN SPINNING');
         await tryYAdv('FIBER CATEGORY',   y.fiberCategory,   'YARN FIBER-CAT');
